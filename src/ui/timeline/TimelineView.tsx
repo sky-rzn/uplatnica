@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'preact/hooks';
+import { agendaItems, agendaTotals } from '../../core/agenda';
 import { todayIso } from '../../core/date';
 import { formatAmount } from '../../core/money';
 import {
@@ -15,6 +16,7 @@ import {
 import { useLive } from '../data';
 import { formatDate } from '../format';
 import { OccurrencePanel } from '../occurrence-panel/OccurrencePanel';
+import { OverviewHeader } from '../overview';
 import {
   MONTHS_SHORT,
   STATUS_ICONS,
@@ -183,14 +185,17 @@ export function TimelineView() {
 
   return (
     <section class="timeline">
-      <div class="toolbar">
-        <h1>Pregled</h1>
-        {ready && (
-          <a class="button primary" href={href({ name: 'bill', id: null })}>
-            Novi račun
-          </a>
-        )}
-      </div>
+      <OverviewHeader
+        view="timeline"
+        ready={ready}
+        totals={
+          ready && activeBills.length > 0
+            ? agendaTotals(
+                agendaItems(data.sections, data.bills, data.occurrences, today),
+              )
+            : null
+        }
+      />
 
       {!ready ? (
         <SetupNotice profiles={data.profiles} sections={data.sections} />

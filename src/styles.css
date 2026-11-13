@@ -366,26 +366,50 @@ main.wide {
   display: inline-flex;
 }
 
-.segmented button {
+.segmented > * {
   border-radius: 0;
 }
 
-.segmented button + button {
+.segmented > * + * {
   margin-left: -1px;
 }
 
-.segmented button:first-child {
+.segmented > :first-child {
   border-radius: 6px 0 0 6px;
 }
 
-.segmented button:last-child {
+.segmented > :last-child {
   border-radius: 0 6px 6px 0;
 }
 
-.segmented button[aria-pressed='true'] {
+.segmented > [aria-pressed='true'],
+.segmented > [aria-current='page'] {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-fg);
+}
+
+.overview-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  align-items: center;
+  margin: 0.5rem 0;
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.5rem;
+  margin: 0;
+}
+
+.summary .st-due {
+  color: var(--warning);
+}
+
+.summary .st-overdue {
+  color: var(--st);
 }
 
 .tl-scroll {
@@ -684,6 +708,53 @@ button.tl-block:focus-visible {
 
 .panel-head h2:focus {
   outline: none;
+}
+
+.agenda-group.st-overdue h2 {
+  color: var(--st);
+}
+
+.agenda-group.st-due h2 {
+  color: var(--warning);
+}
+
+.agenda-group h2 .muted {
+  font-weight: normal;
+  font-size: 0.9rem;
+}
+
+.agenda-item {
+  border-left: 4px solid var(--st);
+  padding: 0;
+}
+
+.agenda-item button {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem;
+  border: 0;
+  background: none;
+  text-align: left;
+}
+
+.agenda-item .card-main > * {
+  display: block;
+}
+
+.agenda-item .amount {
+  text-align: right;
+}
+
+.agenda-item .amount small {
+  display: block;
+  color: var(--st);
+  font-weight: 600;
+}
+
+.agenda-item.st-upcoming .amount small {
+  color: var(--muted);
 }
 
 @media (max-width: 40rem) {

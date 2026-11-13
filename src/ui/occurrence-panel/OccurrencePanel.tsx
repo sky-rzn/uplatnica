@@ -16,7 +16,7 @@ import { STATUS_ICONS, STATUS_LABELS, periodLabel } from '../period-text';
 
 export function OccurrencePanel(props: {
   bill: Bill;
-  block: Block;
+  block: Pick<Block, 'occ' | 'status'>;
   profile: Profile | undefined;
   onClose: () => void;
 }) {

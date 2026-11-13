@@ -1,6 +1,7 @@
 import type { Repo } from './db/repo';
 import { BillEditor } from './ui/bill-editor/BillEditor';
 import { BillsView } from './ui/bills/BillsView';
+import { ListView } from './ui/list/ListView';
 import { RepoContext } from './ui/data';
 import { ProfilesView } from './ui/profiles/ProfilesView';
 import { href, useRoute, type Route } from './ui/router';
@@ -18,6 +19,8 @@ function Page({ route }: { route: Route }) {
   switch (route.name) {
     case 'timeline':
       return <TimelineView />;
+    case 'list':
+      return <ListView />;
     case 'bills':
       return <BillsView />;
     case 'bill':
@@ -31,7 +34,12 @@ function Page({ route }: { route: Route }) {
 
 export function App({ repo }: { repo: Repo }) {
   const route = useRoute();
-  const current = route.name === 'bill' ? 'bills' : route.name;
+  const current =
+    route.name === 'bill'
+      ? 'bills'
+      : route.name === 'list'
+        ? 'timeline'
+        : route.name;
   return (
     <RepoContext.Provider value={repo}>
       <header class="top">

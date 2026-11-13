@@ -1,4 +1,4 @@
-import { addDays, parseIsoDate, type IsoDate } from '../core/date';
+import { addDays, diffDays, parseIsoDate, type IsoDate } from '../core/date';
 import type { Status } from '../core/status';
 import { formatDate } from './format';
 
@@ -72,3 +72,19 @@ export const STATUS_ICONS: Record<Status, string> = {
   due: '',
   upcoming: '',
 };
+
+/** Serbian noun form after a number: 1, 21, 101 take the singular. */
+export function plural(n: number, one: string, other: string): string {
+  return n % 10 === 1 && n % 100 !== 11 ? one : other;
+}
+
+/** "danas", "sutra", "za 3 dana", "kasni 5 dana" */
+export function dueInText(due: IsoDate, today: IsoDate): string {
+  const days = diffDays(due, today);
+  if (days === 0) return 'danas';
+  if (days === 1) return 'sutra';
+  if (days === -1) return 'juče';
+  const n = Math.abs(days);
+  const text = `${String(n)} ${plural(n, 'dan', 'dana')}`;
+  return days > 0 ? `za ${text}` : `pre ${text}`;
+}

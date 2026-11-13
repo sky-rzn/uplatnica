@@ -2,6 +2,7 @@ import { useEffect, useState } from 'preact/hooks';
 
 export type Route =
   | { name: 'timeline' }
+  | { name: 'list' }
   | { name: 'bills' }
   | { name: 'bill'; id: string | null }
   | { name: 'sections' }
@@ -10,6 +11,8 @@ export type Route =
 export function parseRoute(hash: string): Route {
   const parts = hash.replace(/^#\/?/, '').split('/');
   switch (parts[0]) {
+    case 'list':
+      return { name: 'list' };
     case 'bills':
       return { name: 'bills' };
     case 'sections':
