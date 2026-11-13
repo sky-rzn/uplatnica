@@ -69,6 +69,19 @@ export class Repo {
     return stored;
   }
 
+  /** Sets order to each section's position in ids. */
+  reorderSections(ids: readonly string[]): Promise<void> {
+    const { db } = this;
+    return db.transaction('rw', db.sections, async () => {
+      const sections = await db.sections.bulkGet([...ids]);
+      await db.sections.bulkPut(
+        sections.flatMap((s, i) =>
+          s && s.order !== i ? [this.stamp({ ...s, order: i })] : [],
+        ),
+      );
+    });
+  }
+
   deleteSection(id: string): Promise<void> {
     const { db } = this;
     return db.transaction('rw', db.sections, db.bills, async () => {

@@ -56,6 +56,19 @@ describe('Repo', () => {
     expect((await repo.listSections()).map((s) => s.id)).toEqual(['s2', 's1']);
   });
 
+  it('renumbers sections in the given order', async () => {
+    await repo.saveSection({ ...section, id: 's2', order: 3 });
+    await repo.saveSection({ ...section, id: 's3', order: 2 });
+    clock = new Date('2026-11-14T08:00:00Z');
+    await repo.reorderSections(['s1', 's3', 's2']);
+    const listed = await repo.listSections();
+    expect(listed.map((s) => [s.id, s.order, s.updatedAt])).toEqual([
+      ['s1', 0, '2026-11-13T10:00:00.000Z'],
+      ['s3', 1, '2026-11-14T08:00:00.000Z'],
+      ['s2', 2, '2026-11-14T08:00:00.000Z'],
+    ]);
+  });
+
   it('filters bills by section', async () => {
     await repo.saveSection({ ...section, id: 's2', order: 1 });
     await repo.saveBill(monthly);
