@@ -1,14 +1,321 @@
 :root {
   color-scheme: light dark;
   font-family: system-ui, sans-serif;
+  --bg: #fff;
+  --fg: #1d1f23;
+  --muted: #5f6672;
+  --border: #d6d9de;
+  --card: #f7f8fa;
+  --accent: #2f62b8;
+  --accent-fg: #fff;
+  --error: #b3261e;
+  --warning: #8a5300;
+  --danger: #b3261e;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15171a;
+    --fg: #e6e8eb;
+    --muted: #a0a7b2;
+    --border: #3a3f46;
+    --card: #1e2125;
+    --accent: #7aa7f0;
+    --accent-fg: #0d1420;
+    --error: #ff8a80;
+    --warning: #f0b45c;
+    --danger: #ff8a80;
+  }
 }
 
 body {
   margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+a {
+  color: var(--accent);
+}
+
+header.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.5rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+nav {
+  display: flex;
+  gap: 1rem;
+}
+
+nav a {
+  text-decoration: none;
+  padding: 0.25rem 0;
+}
+
+nav a[aria-current='page'] {
+  color: var(--fg);
+  border-bottom: 2px solid var(--accent);
 }
 
 main {
-  max-width: 60rem;
+  max-width: 48rem;
   margin: 0 auto;
   padding: 1rem;
+}
+
+footer {
+  max-width: 48rem;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  margin: 1.5rem 0 0.5rem;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.lead,
+.muted,
+.hint,
+.empty {
+  color: var(--muted);
+}
+
+.hint {
+  font-size: 0.85rem;
+}
+
+.pre {
+  white-space: pre-line;
+}
+
+button,
+.button {
+  font: inherit;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card);
+  color: var(--fg);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-fg);
+}
+
+.danger {
+  color: var(--danger);
+}
+
+.cards {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+}
+
+.card.archived {
+  opacity: 0.6;
+}
+
+.card-main {
+  flex: 1;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.card .amount {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.swatch {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 3px;
+  flex: none;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.actions.sticky {
+  position: sticky;
+  bottom: 0;
+  padding: 0.75rem 0;
+  background: var(--bg);
+}
+
+.form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+form.card {
+  display: grid;
+  align-items: stretch;
+  margin-bottom: 0.5rem;
+}
+
+fieldset {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem 1rem;
+  margin: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+legend {
+  font-weight: 600;
+  padding: 0 0.25rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.field label {
+  font-weight: 500;
+}
+
+input:not([type='checkbox'], [type='radio'], [type='color']),
+select,
+textarea {
+  font: inherit;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+[aria-invalid='true'] {
+  border-color: var(--error) !important;
+}
+
+.error,
+.warning {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.error {
+  color: var(--error);
+}
+
+.warning {
+  color: var(--warning);
+}
+
+.check {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.radios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.dates .row {
+  align-items: end;
+}
+
+.row > .field {
+  flex: 1 1 10rem;
+}
+
+.preview {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  background: var(--card);
+}
+
+.preview output {
+  font-family: ui-monospace, monospace;
+}
+
+.dates {
+  display: grid;
+  gap: 0.5rem;
+  justify-items: start;
+}
+
+.notice ul {
+  margin: 0;
+}
+
+.notice {
+  display: block;
 }
