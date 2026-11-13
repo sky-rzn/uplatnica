@@ -8,7 +8,7 @@
 | [uplatnica-account-reference.md](uplatnica-account-reference.md) | Бланк Nalog za uplatu, номер счёта и MOD 97, модели poziva na broj |
 | [payment-codes.md](payment-codes.md), [payment-codes.json](payment-codes.json) | Šifre plaćanja (Prilog 3, редакция 82/2024) |
 | [taxes-and-utilities.md](taxes-and-utilities.md) | Реквизиты паушала, porez na imovinu, шифры общин Белграда, Infostan/EPS/mts |
-| [real-bills.md](real-bills.md) | Разбор реальных счетов: Infostan, mts, stambena zajednica |
+| [real-bills.md](real-bills.md) | Разбор реальных счетов: Infostan, mts, EPS, stambena zajednica |
 | [../../tests/fixtures/ips-qr.json](../../tests/fixtures/ips-qr.json) | Валидные и невалидные строки IPS QR с ожидаемым кодом ошибки валидатора |
 
 Контрольные цифры всех найденных счетов и примеры модели 97 пересчитаны
@@ -59,8 +59,7 @@
 
 ## Открытые вопросы
 
-- Реальные IPS QR со счетов EPS и налогов — пока есть только Infostan
-  и mts.
+- Реальные IPS QR со счетов налогов — пока есть Infostan, mts и EPS.
 - Белград, porez na imovinu: шифра городской общины или 501 «Grad
   Beograd», и что именно идёт в идентификатор.
 - Внутренняя структура BOP паушалиста.

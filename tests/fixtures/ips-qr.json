@@ -146,6 +146,19 @@
         "amount": "=3.249,00",
         "dueDate": "15.10.2026"
       }
+    },
+    {
+      "id": "eps-2026-05",
+      "source": "docs/photos/Račun za električnu energiju.pdf",
+      "qr": "K:PR|V:01|C:1|R:190000000009987010|N:EPS AD Beograd|I:RSD2964,18|SF:289|S:Uplata po računu za el. energiju|RO:9793020093177252605",
+      "paper": {
+        "account": "190-99870-10",
+        "model": "97",
+        "reference": "93-02009317725-2605",
+        "paymentCode": "189",
+        "amount": "",
+        "dueDate": "29.06.2026"
+      }
     }
   ],
   "paperOnly": [

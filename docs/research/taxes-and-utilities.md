@@ -371,9 +371,10 @@ broj odobrenja" для такс. Пример — Uprava za šume: юрлица 
   <https://www.eps.rs/lat/vesti/Stranice/nov-racun.aspx>.
   Важно: если в приложении был сохранён старый белградский счёт EPS, его
   нужно обновить.
-- Model и poziv na broj: на сайте EPS не описаны. [В] ipsuplatnica.com:
-  model 97 + KK + ED-broj (или šifra kupca). **НЕ ПРОВЕРЕНО.** На счёте
-  есть "Šifra kupca" [П]; "ED broj" — номер точки учёта [П, FAQ].
+- Model и poziv na broj: на сайте EPS не описаны. По реальному счёту
+  (real-bills.md): model 97, poziv = KK + наплатни број, дополненный
+  нулём до 11 цифр, + YYMM расчётного периода. Версия ipsuplatnica.com
+  (ED-broj или šifra kupca) не подтвердилась.
 
 ### 4.3 Telekom Srbija (mts)
 
@@ -416,5 +417,5 @@ broj odobrenja" для такс. Пример — Uprava za šume: юрлица 
   стоит в идентификаторе (JMBG + год?). Нужен образец rešenja / uplatnice.
 - Сверка Prilog 1 с trezor.gov.rs и содержание изменений 115/2025 и
   30/2026.
-- Номер счёта и модель Infostan; модель/poziv EPS; реквизиты mts.
+- Номер счёта и модель Infostan; реквизиты mts.
 - Счёт 840-4848-37 (PPP-PD) — подтвердить или удалить.
