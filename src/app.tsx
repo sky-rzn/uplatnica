@@ -7,6 +7,7 @@ import { ProfilesView } from './ui/profiles/ProfilesView';
 import { href, useRoute, type Route } from './ui/router';
 import { SectionsView } from './ui/sections/SectionsView';
 import { TimelineView } from './ui/timeline/TimelineView';
+import { PrintView } from './ui/uplatnica/PrintView';
 
 const NAV: readonly { route: Route; label: string }[] = [
   { route: { name: 'timeline' }, label: 'Pregled' },
@@ -29,6 +30,8 @@ function Page({ route }: { route: Route }) {
       return <SectionsView />;
     case 'profiles':
       return <ProfilesView />;
+    case 'print':
+      return <PrintView items={route.items} />;
   }
 }
 
@@ -37,7 +40,7 @@ export function App({ repo }: { repo: Repo }) {
   const current =
     route.name === 'bill'
       ? 'bills'
-      : route.name === 'list'
+      : route.name === 'list' || route.name === 'print'
         ? 'timeline'
         : route.name;
   return (

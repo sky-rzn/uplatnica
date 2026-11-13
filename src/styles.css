@@ -728,6 +728,11 @@ button.tl-block:focus-visible {
   padding: 0;
 }
 
+.agenda-item .pick {
+  margin-left: 0.75rem;
+  flex: none;
+}
+
 .agenda-item button {
   display: flex;
   align-items: center;
@@ -755,6 +760,94 @@ button.tl-block:focus-visible {
 
 .agenda-item.st-upcoming .amount small {
   color: var(--muted);
+}
+
+.print-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0.5rem 0;
+}
+
+@font-face {
+  font-family: 'Slip Sans';
+  src: url('./assets/fonts/NotoSans-Regular.ttf') format('truetype');
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'Slip Sans';
+  src: url('./assets/fonts/NotoSans-Bold.ttf') format('truetype');
+  font-weight: 700;
+}
+
+.slip {
+  display: block;
+  font-family: 'Slip Sans', sans-serif;
+  color-scheme: light;
+}
+
+.notice-list {
+  padding-left: 1.25rem;
+}
+
+.sheet {
+  display: grid;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.sheet .slip {
+  width: 100%;
+  max-width: 210mm;
+  height: auto;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 25%);
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  header.top,
+  footer,
+  .no-print {
+    display: none;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  main,
+  main.wide {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .sheet {
+    display: block;
+    width: 210mm;
+    height: 297mm;
+    margin: 0;
+    overflow: hidden;
+    break-after: page;
+  }
+
+  .sheet:last-child {
+    break-after: auto;
+  }
+
+  .sheet .slip {
+    width: 210mm;
+    max-width: none;
+    height: 99mm;
+    box-shadow: none;
+  }
 }
 
 @media (max-width: 40rem) {

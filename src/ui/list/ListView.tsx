@@ -19,7 +19,7 @@ import {
   dueInText,
   periodLabel,
 } from '../period-text';
-import { href } from '../router';
+import { href, navigate, type PeriodRef } from '../router';
 import { SetupNotice } from '../SetupNotice';
 
 const GROUPS: readonly { key: AgendaGroup; title: string; cls: string }[] = [
@@ -28,11 +28,30 @@ const GROUPS: readonly { key: AgendaGroup; title: string; cls: string }[] = [
   { key: 'soon', title: 'Uskoro', cls: 'st-upcoming' },
 ];
 
-function Item(props: { item: AgendaItem; today: string; onOpen: () => void }) {
+function itemKey(item: AgendaItem): string {
+  return `${item.bill.id}:${item.occ.periodKey}`;
+}
+
+function Item(props: {
+  item: AgendaItem;
+  today: string;
+  picked: boolean;
+  onPick: (picked: boolean) => void;
+  onOpen: () => void;
+}) {
   const { item, today } = props;
   const { bill, occ, status } = item;
   return (
     <li class={`card agenda-item st-${status}`}>
+      <input
+        type="checkbox"
+        class="pick"
+        aria-label={`Izaberi za štampu: ${bill.title}, ${periodLabel(occ)}`}
+        checked={props.picked}
+        onChange={(e) => {
+          props.onPick(e.currentTarget.checked);
+        }}
+      />
       <button type="button" onClick={props.onOpen}>
         <span class="swatch" style={{ background: item.section.color }} />
         <span class="card-main">
@@ -62,7 +81,8 @@ export function ListView() {
     bills: await r.listBills(),
     occurrences: await r.listOccurrences(),
   }));
-  const [open, setOpen] = useState<{ billId: string; periodKey: string }>();
+  const [open, setOpen] = useState<PeriodRef>();
+  const [picked, setPicked] = useState<ReadonlySet<string>>(new Set());
   if (!data) return null;
 
   const today = todayIso();
@@ -70,6 +90,13 @@ export function ListView() {
   const hasBills = data.bills.some((b) => !b.archived);
   const items = agendaItems(data.sections, data.bills, data.occurrences, today);
   const totals = agendaTotals(items);
+  const pickedItems = items.filter((i) => picked.has(itemKey(i)));
+  const pick = (key: string, on: boolean) => {
+    const next = new Set(picked);
+    if (on) next.add(key);
+    else next.delete(key);
+    setPicked(next);
+  };
   const openItem = open
     ? items.find(
         (i) => i.bill.id === open.billId && i.occ.periodKey === open.periodKey,
@@ -96,6 +123,39 @@ export function ListView() {
           dana.
         </p>
       ) : (
+        <div class="print-bar">
+          <label>
+            <input
+              type="checkbox"
+              checked={pickedItems.length === items.length}
+              onChange={(e) => {
+                setPicked(
+                  new Set(e.currentTarget.checked ? items.map(itemKey) : []),
+                );
+              }}
+            />{' '}
+            Izaberi sve
+          </label>
+          <button
+            type="button"
+            disabled={pickedItems.length === 0}
+            onClick={() => {
+              navigate({
+                name: 'print',
+                items: pickedItems.map((i) => ({
+                  billId: i.bill.id,
+                  periodKey: i.occ.periodKey,
+                })),
+              });
+            }}
+          >
+            Štampaj uplatnice
+            {pickedItems.length > 0 && ` (${String(pickedItems.length)})`}
+          </button>
+        </div>
+      )}
+      {ready &&
+        hasBills &&
         GROUPS.map(({ key, title, cls }) => {
           const own = items.filter((i) => agendaGroup(i.status) === key);
           if (own.length === 0) return null;
@@ -111,9 +171,13 @@ export function ListView() {
               <ul class="cards">
                 {own.map((item) => (
                   <Item
-                    key={`${item.bill.id}/${item.occ.periodKey}`}
+                    key={itemKey(item)}
                     item={item}
                     today={today}
+                    picked={picked.has(itemKey(item))}
+                    onPick={(on) => {
+                      pick(itemKey(item), on);
+                    }}
                     onOpen={() => {
                       setOpen({
                         billId: item.bill.id,
@@ -125,8 +189,7 @@ export function ListView() {
               </ul>
             </section>
           );
-        })
-      )}
+        })}
 
       {openItem && (
         <OccurrencePanel

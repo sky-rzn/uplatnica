@@ -1,5 +1,7 @@
 import type { Issue } from '../core/forms/issues';
+import type { IpsQrIssue } from '../core/serbia/ipsQr';
 import type { ReferenceError } from '../core/serbia/reference';
+import type { SlipWarning } from '../core/uplatnica/slip';
 
 const REFERENCE: Record<ReferenceError, string> = {
   empty: 'Poziv na broj je prazan.',
@@ -63,3 +65,35 @@ export function issueText(issue: Issue): string {
       return 'Izgleda da poziv na broj već počinje kontrolnim brojem. Za model 97 on se dodaje sam: unesite poziv na broj bez prve dve cifre.';
   }
 }
+
+const QR_FIELDS: Record<string, string> = {
+  R: 'račun primaoca',
+  N: 'naziv primaoca',
+  I: 'iznos',
+  P: 'platilac',
+  SF: 'šifra plaćanja',
+  S: 'svrha uplate',
+  RO: 'poziv na broj',
+};
+
+const QR_CODES: Record<string, string> = {
+  missing: 'nedostaje',
+  invalid: 'nije ispravno',
+  checksum: 'kontrolni broj nije ispravan',
+  length: 'predugačko',
+  lines: 'previše redova',
+  chars: 'nedozvoljeni znakovi',
+};
+
+export function qrIssueText(issue: IpsQrIssue): string {
+  if (issue.code === 'too-large') return 'Podaci ne staju u IPS QR kod.';
+  if (issue.tag === null) return 'Podaci nisu ispravni za IPS QR kod.';
+  const field = QR_FIELDS[issue.tag] ?? issue.tag;
+  return `${field.charAt(0).toUpperCase()}${field.slice(1)}: ${QR_CODES[issue.code] ?? 'nije ispravno'}.`;
+}
+
+export const SLIP_WARNINGS: Record<SlipWarning, string> = {
+  'no-amount': 'Iznos još nije unet, pa uplatnica nema iznos ni QR kod.',
+  overflow:
+    'Tekst ne staje u tri reda od 35 znakova i odsečen je na uplatnici.',
+};
