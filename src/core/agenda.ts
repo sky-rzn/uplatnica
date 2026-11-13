@@ -6,7 +6,12 @@ import {
   resolveOccurrences,
   type ResolvedOccurrence,
 } from './schedule';
-import { computeStatus, effectiveAmount, type Status } from './status';
+import {
+  computeStatus,
+  effectiveAmount,
+  remainingAmount,
+  type Status,
+} from './status';
 
 export const AGENDA_AHEAD_DAYS = 45;
 
@@ -68,16 +73,13 @@ export function agendaItems(
       const status = computeStatus(bill, occ, today);
       if (status === 'paid' || (status === 'upcoming' && occ.dueDate > until))
         continue;
-      const amount = effectiveAmount(bill, occ);
-      const paid =
-        occ.stored?.paidAt !== undefined ? (occ.stored.paidAmount ?? 0) : 0;
       items.push({
         bill,
         section,
         occ,
         status,
-        amount,
-        remaining: amount === undefined ? undefined : amount - paid,
+        amount: effectiveAmount(bill, occ),
+        remaining: remainingAmount(bill, occ),
       });
     }
   }

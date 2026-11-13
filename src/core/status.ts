@@ -18,6 +18,18 @@ export function effectiveAmount(
   );
 }
 
+/** The amount less a short payment; undefined while the amount is unknown. */
+export function remainingAmount(
+  bill: Bill,
+  occ: ResolvedOccurrence,
+): Para | undefined {
+  const amount = effectiveAmount(bill, occ);
+  if (amount === undefined) return undefined;
+  const paid =
+    occ.stored?.paidAt !== undefined ? (occ.stored.paidAmount ?? 0) : 0;
+  return amount - paid;
+}
+
 export function computeStatus(
   bill: Bill,
   occ: ResolvedOccurrence,

@@ -271,3 +271,18 @@ export function resolveOccurrences(
     a.start < b.start ? -1 : a.start > b.start ? 1 : 0,
   );
 }
+
+/** One period by its key, resolved the same way as in resolveOccurrences(). */
+export function resolveOccurrence(
+  bill: Bill,
+  stored: readonly Occurrence[],
+  key: string,
+): ResolvedOccurrence | null {
+  const bounds = periodKeyBounds(key);
+  if (!bounds) return null;
+  return (
+    resolveOccurrences(bill, stored, bounds.start, bounds.end).find(
+      (o) => o.periodKey === key,
+    ) ?? null
+  );
+}
