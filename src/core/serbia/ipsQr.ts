@@ -65,16 +65,23 @@ function charLength(s: string): number {
   return Array.from(s).length;
 }
 
+export const QR_TEXT_LIMITS = {
+  N: { chars: 70, lines: 3 },
+  P: { chars: 70, lines: 3 },
+  S: { chars: 35, lines: 1 },
+} as const;
+
+type TextTag = keyof typeof QR_TEXT_LIMITS;
+
 function checkText(
-  tag: string,
+  tag: TextTag,
   value: string,
-  maxChars: number,
-  maxLines: number,
+  limits: { chars: number; lines: number },
   out: IpsQrIssue[],
 ): void {
   const lines = value.split(/\r\n|\r|\n/);
-  if (lines.length > maxLines) out.push({ tag, code: 'lines' });
-  if (charLength(value) > maxChars) out.push({ tag, code: 'length' });
+  if (lines.length > limits.lines) out.push({ tag, code: 'lines' });
+  if (charLength(value) > limits.chars) out.push({ tag, code: 'length' });
   if (!lines.every((l) => TEXT_CHARS.test(l))) out.push({ tag, code: 'chars' });
 }
 
@@ -153,10 +160,8 @@ export function validateIpsQr(text: string): IpsQrIssue[] {
         break;
       case 'N':
       case 'P':
-        checkText(tag, v, 70, 3, issues);
-        break;
       case 'S':
-        checkText(tag, v, 35, 1, issues);
+        checkText(tag, v, QR_TEXT_LIMITS[tag], issues);
         break;
       case 'I':
         if (!AMOUNT.test(v)) issues.push({ tag, code: 'invalid' });
@@ -190,6 +195,14 @@ export function sanitizeQrText(value: string, multiline: boolean): string {
     .map((l) => l.replace(/ {2,}/g, ' ').trim())
     .filter((l) => l !== '')
     .join('\r\n');
+}
+
+/** Checks a text field the way buildIpsQr() will encode it. */
+export function checkQrText(tag: TextTag, value: string): IpsQrIssue[] {
+  const limits = QR_TEXT_LIMITS[tag];
+  const issues: IpsQrIssue[] = [];
+  checkText(tag, sanitizeQrText(value, limits.lines > 1), limits, issues);
+  return issues;
 }
 
 export type BuildResult =

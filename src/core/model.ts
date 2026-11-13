@@ -51,6 +51,7 @@ export interface Bill {
   purpose: string;
   model?: ReferenceModel;
   referenceTemplate?: string;
+  referenceVars?: Record<string, string>;
   amountMode: 'fixed' | 'variable';
   amount?: Para;
   currency: 'RSD';

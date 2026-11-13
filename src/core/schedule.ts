@@ -173,6 +173,26 @@ export function periods(
   return result;
 }
 
+/**
+ * The first count periods not yet due, or the last period when the schedule
+ * has ended.
+ */
+export function upcomingPeriods(
+  schedule: Schedule,
+  today: IsoDate,
+  count: number,
+): Period[] {
+  const first =
+    schedule.kind === 'dates'
+      ? [...schedule.dates].sort()[0]
+      : `${schedule.start}-01`;
+  if (first === undefined) return [];
+  const to = addDays(first > today ? first : today, 366 * (count + 1));
+  const all = periods(schedule, first, to);
+  const next = all.filter((p) => p.dueDate >= today);
+  return next.length > 0 ? next.slice(0, count) : all.slice(-1);
+}
+
 export function expand(
   bill: Bill,
   from: IsoDate,
