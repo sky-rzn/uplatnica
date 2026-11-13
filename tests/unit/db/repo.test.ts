@@ -4,6 +4,7 @@ import type { Profile, Section } from '../../../src/core/model';
 import { IntegrityError, Repo, newId } from '../../../src/db/repo';
 import { UplatnicaDb } from '../../../src/db/schema';
 import { bill } from '../core/fixtures';
+import { T0, dataset } from '../io/fixtures';
 
 const profile: Profile = {
   id: 'p1',
@@ -156,5 +157,30 @@ describe('Repo', () => {
     });
     await repo.deleteBill('b1');
     expect((await repo.listOccurrences()).map((o) => o.billId)).toEqual(['b2']);
+  });
+
+  it('replaces everything and keeps the imported updatedAt', async () => {
+    await repo.saveSection({ ...section, id: 's9', order: 1 });
+    await repo.replaceAll(dataset());
+    const dump = await repo.dump();
+    expect(dump).toEqual(dataset());
+    expect(dump.bills[0]?.updatedAt).toBe(T0);
+  });
+
+  it('merges newer records and leaves the others alone', async () => {
+    await repo.replaceAll(dataset());
+    await repo.saveSection({ ...section, name: 'Moj stan' });
+    const incoming = dataset();
+    const [b] = incoming.bills;
+    if (!b) throw new Error('fixture');
+    b.title = 'Novo';
+    b.updatedAt = '2026-11-02T10:00:00.000Z';
+    expect(await repo.merge(incoming)).toEqual({
+      added: 0,
+      updated: 1,
+      kept: 4,
+    });
+    expect((await repo.getSection('s1'))?.name).toBe('Moj stan');
+    expect((await repo.getBill('b1'))?.title).toBe('Novo');
   });
 });

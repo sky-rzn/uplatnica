@@ -5,6 +5,13 @@ export const DB_NAME = 'uplatnica';
 
 export type Stored<T> = T & { updatedAt: string };
 
+export interface Dataset {
+  profiles: Stored<Profile>[];
+  sections: Stored<Section>[];
+  bills: Stored<Bill>[];
+  occurrences: Stored<Occurrence>[];
+}
+
 export type OccurrenceKey = [billId: string, periodKey: string];
 
 export class UplatnicaDb extends Dexie {

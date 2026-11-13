@@ -1,5 +1,6 @@
 import type { Bill, Occurrence, Profile, Section } from '../core/model';
-import type { Stored, UplatnicaDb } from './schema';
+import { mergeDatasets, type MergeStats } from '../io/merge';
+import type { Dataset, Stored, UplatnicaDb } from './schema';
 
 export class IntegrityError extends Error {
   override name = 'IntegrityError';
@@ -158,5 +159,45 @@ export class Repo {
 
   deleteOccurrence(billId: string, periodKey: string): Promise<void> {
     return this.db.occurrences.delete([billId, periodKey]);
+  }
+
+  dump(): Promise<Dataset> {
+    const { db } = this;
+    return db.transaction('r', this.tables(), async () => ({
+      profiles: await db.profiles.toArray(),
+      sections: await db.sections.orderBy('order').toArray(),
+      bills: await db.bills.toArray(),
+      occurrences: await db.occurrences.toArray(),
+    }));
+  }
+
+  /** Writes the records as they are, keeping their updatedAt. */
+  replaceAll(data: Dataset): Promise<void> {
+    const { db } = this;
+    return db.transaction('rw', this.tables(), async () => {
+      await Promise.all(this.tables().map((t) => t.clear()));
+      await db.profiles.bulkAdd(data.profiles);
+      await db.sections.bulkAdd(data.sections);
+      await db.bills.bulkAdd(data.bills);
+      await db.occurrences.bulkAdd(data.occurrences);
+    });
+  }
+
+  /** Adds new records and replaces those the incoming data has newer. */
+  merge(incoming: Dataset): Promise<MergeStats> {
+    const { db } = this;
+    return db.transaction('rw', this.tables(), async () => {
+      const { put, stats } = mergeDatasets(await this.dump(), incoming);
+      await db.profiles.bulkPut(put.profiles);
+      await db.sections.bulkPut(put.sections);
+      await db.bills.bulkPut(put.bills);
+      await db.occurrences.bulkPut(put.occurrences);
+      return stats;
+    });
+  }
+
+  private tables() {
+    const { db } = this;
+    return [db.profiles, db.sections, db.bills, db.occurrences] as const;
   }
 }
