@@ -29,7 +29,7 @@ beforeEach(async () => {
 
 describe('BillEditor', () => {
   it('creates a bill with a reference template', async () => {
-    renderApp(repo, '#/');
+    renderApp(repo, '#/bills');
     fireEvent.click(await screen.findByRole('link', { name: 'Novi račun' }));
     await screen.findByRole('form', { name: 'Novi račun' });
 

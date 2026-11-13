@@ -4,6 +4,7 @@ import { formatAmount } from '../../core/money';
 import { upcomingPeriods } from '../../core/schedule';
 import { formatAccountShort } from '../../core/serbia/account';
 import { useLive } from '../data';
+import { SetupNotice } from '../SetupNotice';
 import { formatDate } from '../format';
 import { href } from '../router';
 import { scheduleText } from '../schedule-text';
@@ -54,24 +55,7 @@ export function BillsView() {
           </a>
         )}
       </div>
-      {!ready && (
-        <div class="card notice">
-          <p>Pre prvog računa potrebni su:</p>
-          <ul>
-            {profiles.length === 0 && (
-              <li>
-                <a href={href({ name: 'profiles' })}>platilac</a> - ko plaća;
-              </li>
-            )}
-            {sections.length === 0 && (
-              <li>
-                <a href={href({ name: 'sections' })}>odeljak</a> - grupa računa,
-                na primer „Stan“.
-              </li>
-            )}
-          </ul>
-        </div>
-      )}
+      {!ready && <SetupNotice profiles={profiles} sections={sections} />}
       {ready && bills.length === 0 && <p class="empty">Još nema računa.</p>}
       {sections.map((s) => {
         const own = bills

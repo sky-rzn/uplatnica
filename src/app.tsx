@@ -5,8 +5,10 @@ import { RepoContext } from './ui/data';
 import { ProfilesView } from './ui/profiles/ProfilesView';
 import { href, useRoute, type Route } from './ui/router';
 import { SectionsView } from './ui/sections/SectionsView';
+import { TimelineView } from './ui/timeline/TimelineView';
 
 const NAV: readonly { route: Route; label: string }[] = [
+  { route: { name: 'timeline' }, label: 'Pregled' },
   { route: { name: 'bills' }, label: 'Računi' },
   { route: { name: 'sections' }, label: 'Odeljci' },
   { route: { name: 'profiles' }, label: 'Platioci' },
@@ -14,6 +16,8 @@ const NAV: readonly { route: Route; label: string }[] = [
 
 function Page({ route }: { route: Route }) {
   switch (route.name) {
+    case 'timeline':
+      return <TimelineView />;
     case 'bills':
       return <BillsView />;
     case 'bill':
@@ -31,7 +35,7 @@ export function App({ repo }: { repo: Repo }) {
   return (
     <RepoContext.Provider value={repo}>
       <header class="top">
-        <a class="brand" href={href({ name: 'bills' })}>
+        <a class="brand" href={href({ name: 'timeline' })}>
           Uplatnica
         </a>
         <nav aria-label="Glavni meni">
@@ -46,7 +50,7 @@ export function App({ repo }: { repo: Repo }) {
           ))}
         </nav>
       </header>
-      <main>
+      <main class={route.name === 'timeline' ? 'wide' : undefined}>
         <Page route={route} />
       </main>
       <footer>Svi podaci ostaju u ovom pregledaču.</footer>

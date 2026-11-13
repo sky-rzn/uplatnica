@@ -319,3 +319,384 @@ textarea {
 .notice {
   display: block;
 }
+
+main.wide {
+  max-width: none;
+}
+
+:root {
+  --st-paid: #2e7d32;
+  --st-due: #f29d1f;
+  --st-overdue: #c62828;
+  --st-upcoming: #8b929c;
+  --st-fg: #fff;
+  --st-due-fg: #1d1f23;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --st-paid: #4caf50;
+    --st-due: #f59e0b;
+    --st-overdue: #ef5350;
+    --st-upcoming: #6b7280;
+    --st-fg: #111;
+    --st-due-fg: #111;
+  }
+}
+
+.inline {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.inline select {
+  width: auto;
+}
+
+.tl-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  margin: 0.5rem 0 0.75rem;
+}
+
+.segmented {
+  display: inline-flex;
+}
+
+.segmented button {
+  border-radius: 0;
+}
+
+.segmented button + button {
+  margin-left: -1px;
+}
+
+.segmented button:first-child {
+  border-radius: 6px 0 0 6px;
+}
+
+.segmented button:last-child {
+  border-radius: 0 6px 6px 0;
+}
+
+.segmented button[aria-pressed='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-fg);
+}
+
+.tl-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.tl {
+  --label: 11rem;
+  --lane: 2.4rem;
+  width: max-content;
+  min-width: 100%;
+  font-size: 0.85rem;
+}
+
+.tl-row,
+.tl-head {
+  display: grid;
+  grid-template-columns: var(--label) repeat(
+      var(--days),
+      minmax(var(--day), 1fr)
+    );
+  grid-template-rows: var(--lane);
+  border-bottom: 1px solid var(--border);
+}
+
+.tl-head {
+  grid-template-rows: auto auto;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--bg);
+}
+
+.tl-label {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  padding: 0 0.5rem;
+  line-height: 1.2;
+  background: var(--bg);
+  border-right: 1px solid var(--border);
+}
+
+.tl-label a {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: inherit;
+}
+
+.tl-total {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tl-year,
+.tl-month {
+  grid-row: 1;
+  padding: 0.15rem 0.3rem;
+  border-left: 1px solid var(--border);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.tl-year {
+  font-weight: 600;
+  overflow: visible;
+}
+
+.tl-year span {
+  position: sticky;
+  left: calc(var(--label) + 0.3rem);
+}
+
+.tl-month {
+  grid-row: 2;
+  color: var(--muted);
+}
+
+.tl-month.new-year {
+  border-left-color: var(--fg);
+}
+
+.tl-section-head {
+  background: var(--card);
+}
+
+.tl-section-head .tl-label {
+  background: var(--card);
+}
+
+.tl-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 0;
+  padding: 0;
+  background: none;
+  font-weight: 600;
+  text-align: left;
+}
+
+.tl-toggle::before {
+  content: '▾';
+  color: var(--muted);
+}
+
+.tl-toggle[aria-expanded='false']::before {
+  content: '▸';
+}
+
+.tl-today {
+  grid-row: 1 / -1;
+  justify-self: start;
+  width: 2px;
+  background: var(--accent);
+  pointer-events: none;
+}
+
+.tl-block {
+  position: relative;
+  margin: 3px 1px;
+  min-width: 4px;
+  padding: 0 0.3rem;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: left;
+  color: var(--st-fg);
+  font-variant-numeric: tabular-nums;
+}
+
+button.tl-block:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 1px;
+}
+
+.tl-block.clip-start {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  margin-left: 0;
+}
+
+.tl-block.clip-end {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  margin-right: 0;
+}
+
+.tl-block.stale {
+  border-style: dashed;
+  border-color: var(--fg);
+}
+
+.st-paid {
+  --st: var(--st-paid);
+}
+
+.st-due,
+.st-awaiting-amount,
+.st-partial {
+  --st: var(--st-due);
+}
+
+.tl-block.st-due,
+.tl-block.st-awaiting-amount,
+.tl-block.st-partial {
+  color: var(--st-due-fg);
+}
+
+.st-overdue {
+  --st: var(--st-overdue);
+}
+
+.st-upcoming {
+  --st: var(--st-upcoming);
+}
+
+.tl-block.st-paid,
+.tl-block.st-due,
+.tl-block.st-overdue {
+  background: var(--st);
+}
+
+.tl-block.st-awaiting-amount {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--st) 0 6px,
+    color-mix(in srgb, var(--st) 60%, var(--bg)) 6px 12px
+  );
+}
+
+.tl-block.st-partial {
+  background: linear-gradient(90deg, var(--st-paid) 50%, var(--st) 50%);
+}
+
+.tl-block.st-upcoming {
+  background: color-mix(in srgb, var(--st) 18%, var(--bg));
+  border-color: var(--st);
+  color: var(--fg);
+}
+
+.tl-empty {
+  padding: 1rem;
+}
+
+.tl-legend {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  padding: 0;
+  margin: 0.75rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.tl-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.tl-legend .tl-block {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.1rem;
+  margin: 0;
+  padding: 0;
+}
+
+.status {
+  margin: 0.25rem 0 0;
+  font-weight: 600;
+  color: var(--st);
+}
+
+.status.st-upcoming {
+  color: var(--muted);
+}
+
+.panel-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+}
+
+.panel-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 35%);
+}
+
+.panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(26rem, 100%);
+  box-sizing: border-box;
+  overflow-y: auto;
+  padding: 1rem;
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+  display: grid;
+  align-content: start;
+  gap: 0.75rem;
+}
+
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 0.5rem;
+}
+
+.panel-head h2 {
+  margin: 0;
+}
+
+.panel-head h2:focus {
+  outline: none;
+}
+
+@media (max-width: 40rem) {
+  .tl {
+    --label: 7.5rem;
+  }
+
+  .panel {
+    top: auto;
+    max-height: 90vh;
+    width: 100%;
+    border-left: 0;
+    border-top: 1px solid var(--border);
+    border-radius: 12px 12px 0 0;
+  }
+}
