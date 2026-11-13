@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { fireEvent, screen, waitFor } from '@testing-library/preact';
+import { fireEvent, screen, waitFor, within } from '@testing-library/preact';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Bill } from '../../../src/core/model';
 import type { Repo } from '../../../src/db/repo';
@@ -62,6 +62,12 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
+async function openPanel(title: RegExp) {
+  renderApp(repo, '#/list');
+  fireEvent.click(await screen.findByRole('button', { name: title }));
+  return screen.getByRole('dialog');
+}
+
 describe('router', () => {
   it('round-trips the periods to print', () => {
     const route = {
@@ -72,6 +78,51 @@ describe('router', () => {
       ],
     };
     expect(parseRoute(href(route))).toEqual(route);
+  });
+});
+
+describe('the period panel', () => {
+  it('shows the IPS QR code with what the bank will read from it', async () => {
+    const panel = await openPanel(/^Internet\s*novembar 2026/);
+    fireEvent.click(within(panel).getByRole('button', { name: 'QR kod' }));
+    const qr = within(panel).getByRole('region', { name: 'IPS QR kod' });
+    within(qr).getByRole('img', { name: 'IPS QR kod za uplatu' });
+    expect(
+      [...qr.querySelectorAll('dt')].map(
+        (dt) => `${dt.textContent}: ${dt.nextSibling?.textContent ?? ''}`,
+      ),
+    ).toEqual([
+      'Primalac: SBB',
+      'Račun: 160-0000000000602-16',
+      'Iznos: 2.000,00 RSD',
+      'Šifra plaćanja: 289',
+      'Svrha: Struja',
+      'Platilac: Petar\nBeograd',
+    ]);
+  });
+
+  it('waits for the amount of a variable bill before making a code', async () => {
+    const panel = await openPanel(/^EPS\s*novembar 2026/);
+    fireEvent.click(within(panel).getByRole('button', { name: 'QR kod' }));
+    within(panel).getByText('Unesite iznos da bi se napravio QR kod.');
+    fireEvent.input(within(panel).getByLabelText('Iznos (RSD)'), {
+      target: { value: '3.702,65' },
+    });
+    expect(within(panel).getByText('3.702,65 RSD')).toBeTruthy();
+  });
+
+  it('saves the period and opens its slip', async () => {
+    const panel = await openPanel(/^EPS\s*novembar 2026/);
+    fireEvent.input(within(panel).getByLabelText('Iznos (RSD)'), {
+      target: { value: '1500' },
+    });
+    fireEvent.click(within(panel).getByRole('button', { name: 'Uplatnica' }));
+    await screen.findByRole('img', { name: 'EPS, novembar 2026' });
+    expect(location.hash).toBe('#/print/b1:2026-11');
+    expect(await repo.getOccurrence('b1', '2026-11')).toMatchObject({
+      amount: 150000,
+    });
+    expect(screen.getByText('=1.500,00')).toBeTruthy();
   });
 });
 

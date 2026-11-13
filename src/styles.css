@@ -771,6 +771,37 @@ button.tl-block:focus-visible {
   margin: 0.5rem 0;
 }
 
+.qr-box {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.qr {
+  width: min(16rem, 100%);
+  justify-self: center;
+}
+
+.qr-box dl {
+  margin: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.qr-box dl > div {
+  display: grid;
+  grid-template-columns: 8rem 1fr;
+  gap: 0.5rem;
+}
+
+.qr-box dt {
+  color: var(--muted);
+}
+
+.qr-box dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
 @font-face {
   font-family: 'Slip Sans';
   src: url('./assets/fonts/NotoSans-Regular.ttf') format('truetype');

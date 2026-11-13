@@ -8,11 +8,65 @@ import {
 } from '../../core/forms/occurrence';
 import type { Bill, Profile } from '../../core/model';
 import { formatAmount } from '../../core/money';
+import { formatAccount } from '../../core/serbia/account';
+import { parseIpsQr } from '../../core/serbia/ipsQr';
 import type { Block } from '../../core/timeline';
+import { buildSlip, slipInput, type Slip } from '../../core/uplatnica/slip';
 import { useRepo } from '../data';
 import { TextField, hasErrors, useFeedback } from '../form';
 import { formatDate } from '../format';
+import { qrIssueText } from '../messages';
 import { STATUS_ICONS, STATUS_LABELS, periodLabel } from '../period-text';
+import { navigate } from '../router';
+import { QrCode } from '../uplatnica/QrCode';
+
+function QrDetails({ slip }: { slip: Slip | null }) {
+  if (!slip)
+    return <p class="hint">Ispravite greške u formi da bi se video QR kod.</p>;
+  const { qr } = slip;
+  if (!qr) return <p class="hint">Unesite iznos da bi se napravio QR kod.</p>;
+  if (!qr.ok)
+    return (
+      <ul class="error">
+        {qr.issues.map((issue, i) => (
+          <li key={i}>{qrIssueText(issue)}</li>
+        ))}
+      </ul>
+    );
+  const parsed = parseIpsQr(qr.text);
+  if (!parsed.ok) return null;
+  const v = parsed.value;
+  const rows: [string, string | undefined][] = [
+    ['Primalac', v.payeeName],
+    ['Račun', formatAccount(v.account)],
+    ['Iznos', `${formatAmount(v.amount)} RSD`],
+    ['Šifra plaćanja', v.paymentCode],
+    ['Svrha', v.purpose],
+    [
+      'Poziv na broj',
+      v.reference && (v.model ? `${v.model} ${v.reference}` : v.reference),
+    ],
+    ['Platilac', v.payer],
+  ];
+  return (
+    <div class="qr-box">
+      <QrCode text={qr.text} ecc={qr.ecc} label="IPS QR kod za uplatu" />
+      <dl>
+        {rows.map(([k, val]) =>
+          val ? (
+            <div key={k}>
+              <dt>{k}</dt>
+              <dd class="pre">{val}</dd>
+            </div>
+          ) : null,
+        )}
+      </dl>
+      <p class="hint">
+        Skenirajte kod u aplikaciji banke i proverite podatke pre potvrde.
+      </p>
+    </div>
+  );
+}
 
 export function OccurrencePanel(props: {
   bill: Bill;
@@ -28,6 +82,7 @@ export function OccurrencePanel(props: {
     occurrenceToDraft(ctx, formatAmount),
   );
   const [busy, setBusy] = useState(false);
+  const [showQr, setShowQr] = useState(false);
   const result = validateOccurrence(draft, ctx, 'pay');
   const fb = useFeedback(result);
   const heading = useRef<HTMLHeadingElement>(null);
@@ -79,6 +134,36 @@ export function OccurrencePanel(props: {
       setBusy(false);
     }
   };
+
+  const printSlip = async () => {
+    const r = validateOccurrence(draft, ctx, 'save');
+    if (!r.value || hasErrors(r)) {
+      fb.submit();
+      return;
+    }
+    setBusy(true);
+    try {
+      await repo.saveOccurrence(r.value);
+    } finally {
+      setBusy(false);
+    }
+    navigate({
+      name: 'print',
+      items: [{ billId: bill.id, periodKey: occ.periodKey }],
+    });
+  };
+
+  const saved = validateOccurrence(draft, ctx, 'save').value;
+  const slip =
+    showQr && saved
+      ? buildSlip(
+          slipInput(
+            bill,
+            { ...occ, dueDate: saved.dueDate ?? occ.dueDate, stored: saved },
+            props.profile,
+          ),
+        )
+      : null;
 
   const remove = async () => {
     setBusy(true);
@@ -171,6 +256,33 @@ export function OccurrencePanel(props: {
             },
           )}
           {text('note', 'Napomena', { multiline: true })}
+
+          <div class="actions">
+            <button
+              type="button"
+              aria-expanded={showQr}
+              aria-controls="occ-qr"
+              onClick={() => {
+                setShowQr(!showQr);
+              }}
+            >
+              QR kod
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => {
+                void printSlip();
+              }}
+            >
+              Uplatnica
+            </button>
+          </div>
+          {showQr && (
+            <section id="occ-qr" aria-label="IPS QR kod">
+              <QrDetails slip={slip} />
+            </section>
+          )}
 
           <fieldset>
             <legend>Uplata</legend>
