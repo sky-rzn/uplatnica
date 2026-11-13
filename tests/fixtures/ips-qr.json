@@ -1,0 +1,185 @@
+{
+  "source": "docs/research/ips-qr.md section 6",
+  "checkedAt": "2026-11-13",
+  "valid": [
+    {
+      "id": "F1",
+      "source": "NBS Prilog 1 (Sl. glasnik 125/2020), example",
+      "qr": "K:PR|V:01|C:1|R:845000000040484987|N:JP EPS BEOGRAD|I:RSD3702,65|SF:289|S:UPLATA PO RAČUNU ZA EL. ENERGIJU|RO:97163220000111111111000"
+    },
+    {
+      "id": "F2",
+      "source": "NBS QR API docs, generate/validate example",
+      "qr": "K:PR|V:01|C:1|R:845000000040484987|N:JP EPS BEOGRAD\r\nBALKANSKA 13|I:RSD3596,13|P:MRĐO MAČKATOVIĆ\r\nŽUPSKA 13\r\nBEOGRAD 6|SF:189|S:UPLATA PO RAČUNU ZA EL. ENERGIJU|RO:97163220000111111111000"
+    },
+    {
+      "id": "BASE",
+      "source": "NBS validator 2026-11-13",
+      "qr": "K:PR|V:01|C:1|R:845000000040484987|N:JP EPS BEOGRAD|I:RSD3702,65|SF:289"
+    },
+    {
+      "id": "RO-00",
+      "source": "NBS validator 2026-11-13",
+      "qr": "K:PR|V:01|C:1|R:845000000040484987|N:JP EPS BEOGRAD|I:RSD3702,65|SF:289|RO:001234"
+    },
+    {
+      "id": "P-LF",
+      "source": "NBS validator 2026-11-13",
+      "qr": "K:PR|V:01|C:1|R:845000000040484987|N:JP EPS BEOGRAD|I:RSD3702,65|SF:289|P:PERA PERIC\nULICA 1\nBEOGRAD"
+    },
+    {
+      "id": "N-70",
+      "source": "NBS validator 2026-11-13",
+      "qr": "K:PR|V:01|C:1|R:845000000040484987|N:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA|I:RSD3702,65|SF:289"
+    },
+    {
+      "id": "S-35",
+      "source": "NBS validator 2026-11-13",
+      "qr": "K:PR|V:01|C:1|R:845000000040484987|N:JP EPS BEOGRAD|I:RSD3702,65|SF:289|S:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    }
+  ],
+  "invalid": [
+    {
+      "id": "X1",
+      "code": 620,
+      "qr": "K:PR|V:01|C:1|I:RSD3596,13|R:845000000040484987|P:1dsda89|S:UPLATA PO RAČUNU ZA EL. ENERGIJU|N:dsadsadsa|SF:189|RO:00dadss|"
+    },
+    {
+      "id": "X2",
+      "code": 602,
+      "note": "trailing CRLF; RO model 97 control also wrong",
+      "qr": "K:PR|V:01|C:1|R:845000000040484987|N:JP EPS BEOGRAD\r\nBALKANSKA 13|I:RSD3596,13|P:MRĐO MAČKATOVIĆ\r\nŽUPSKA 13\r\nBEOGRAD 6|SF:189|S:UPLATA PO RAČUNU ZA EL. ENERGIJU|RO:9763220000111111111000\r\n"
+    },
+    {
+      "id": "X3",
+      "code": 608,
+      "qr": "K:PR|V:01|C:1|R:845000000040484987|N:JP EPS BEOGRAD\r\nBALKANSKA 13|I:RSD359613|P:MRĐO MAČKATOVIĆ\r\nŽUPSKA 13\r\nBEOGRAD 6|SF:189|S:UPLATA PO RAČUNU ZA EL. ENERGIJU|RO:97163220000111111111000"
+    },
+    {
+      "id": "R-control",
+      "code": 608,
+      "qr": "K:PR|V:01|C:1|R:845000000040484988|N:JP EPS BEOGRAD|I:RSD3702,65|SF:289"
+    },
+    {
+      "id": "R-17",
+      "code": 608,
+      "qr": "K:PR|V:01|C:1|R:84500000004048498|N:JP EPS BEOGRAD|I:RSD3702,65|SF:289"
+    },
+    {
+      "id": "R-dashes",
+      "code": 608,
+      "qr": "K:PR|V:01|C:1|R:845-0000000404849-87|N:JP EPS BEOGRAD|I:RSD3702,65|SF:289"
+    },
+    {
+      "id": "N-cyrillic",
+      "code": 608,
+      "qr": "K:PR|V:01|C:1|R:845000000040484987|N:ЈП ЕПС БЕОГРАД|I:RSD3702,65|SF:289"
+    },
+    {
+      "id": "N-71",
+      "code": 608,
+      "qr": "K:PR|V:01|C:1|R:845000000040484987|N:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA|I:RSD3702,65|SF:289"
+    },
+    {
+      "id": "S-36",
+      "code": 608,
+      "qr": "K:PR|V:01|C:1|R:845000000040484987|N:JP EPS BEOGRAD|I:RSD3702,65|SF:289|S:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    {
+      "id": "SF-101",
+      "code": 608,
+      "qr": "K:PR|V:01|C:1|R:845000000040484987|N:JP EPS BEOGRAD|I:RSD3702,65|SF:101"
+    },
+    {
+      "id": "SF-389",
+      "code": 608,
+      "qr": "K:PR|V:01|C:1|R:845000000040484987|N:JP EPS BEOGRAD|I:RSD3702,65|SF:389"
+    },
+    {
+      "id": "RO-97-control",
+      "code": 608,
+      "qr": "K:PR|V:01|C:1|R:845000000040484987|N:JP EPS BEOGRAD|I:RSD3702,65|SF:289|RO:9715123412"
+    },
+    {
+      "id": "RO-97-dash",
+      "code": 608,
+      "qr": "K:PR|V:01|C:1|R:845000000040484987|N:JP EPS BEOGRAD|I:RSD3702,65|SF:289|RO:9714-123412"
+    },
+    {
+      "id": "RO-space",
+      "code": 608,
+      "qr": "K:PR|V:01|C:1|R:845000000040484987|N:JP EPS BEOGRAD|I:RSD3702,65|SF:289|RO:00 1234"
+    },
+    {
+      "id": "no-I",
+      "code": 610,
+      "qr": "K:PR|V:01|C:1|R:845000000040484987|N:JP EPS BEOGRAD|SF:289"
+    },
+    {
+      "id": "no-SF",
+      "code": 610,
+      "qr": "K:PR|V:01|C:1|R:845000000040484987|N:JP EPS BEOGRAD|I:RSD3702,65"
+    }
+  ],
+  "real": [
+    {
+      "id": "infostan-2026-09",
+      "source": "docs/photos/photo_1_2026-11-13_15-53-20.jpg",
+      "qr": "K:PR|V:01|C:1|R:200220618010100048|N:JKP INFOSTAN TEHNOLOGIJE BEOGRAD|I:RSD1287,60|SF:122|S:OBJEDINJENA NAPLATA|RO:11804071936013-26093-1",
+      "paper": {
+        "account": "200-2206180101000-48",
+        "model": "11",
+        "reference": "804071936013-26093-1",
+        "paymentCode": "122",
+        "amount": "1.287,60"
+      }
+    },
+    {
+      "id": "mts-2026-09",
+      "source": "docs/photos/photo_2_2026-11-13_15-53-20.jpg",
+      "qr": "K:PR|V:01|C:1|R:160000000000060216|N:Telekom Srbija A.D.\r\nZorana Žunkovića 23\r\nBeograd|I:RSD3249,00|P:PETAR PETROVIĆ\r\nKNEZA MILOŠA 7\r\n11000 BEOGRAD|SF:189|S:MTS Račun 09/2026 31415926/2|RO:97503000114937106",
+      "paper": {
+        "account": "160-602-16",
+        "model": "97",
+        "reference": "50-300-011-4937106",
+        "paymentCode": "21",
+        "amount": "=3.249,00",
+        "dueDate": "15.10.2026"
+      }
+    }
+  ],
+  "paperOnly": [
+    {
+      "id": "stambena-zajednica-2026-09",
+      "source": "docs/photos/photo_3_2026-11-13_15-53-20.jpg",
+      "paper": {
+        "account": "200-0810000027514-51",
+        "model": "97",
+        "reference": "59520418",
+        "paymentCode": "189",
+        "amount": "=2716.35",
+        "purpose": "Članarina stambenoj zajednici za period 01.09.2026. - 30.09.2026."
+      }
+    }
+  ],
+  "model11": [
+    {
+      "reference": "804071936013-26093-1",
+      "parts": [
+        {
+          "data": "80407193601",
+          "control": "3"
+        },
+        {
+          "data": "2609",
+          "control": "3"
+        },
+        {
+          "data": "1",
+          "control": null
+        }
+      ],
+      "note": "weights 2,3,4,... right to left, no cycle; result 10 or 11 -> 0. Cyclic 2-7 would give 7 for P1."
+    }
+  ]
+}
