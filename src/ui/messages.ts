@@ -1,5 +1,6 @@
 import type { Issue } from '../core/forms/issues';
 import type { IpsQrIssue } from '../core/serbia/ipsQr';
+import type { ImportIssue } from '../io/import';
 import type { ReferenceError } from '../core/serbia/reference';
 import type { SlipWarning } from '../core/uplatnica/slip';
 
@@ -97,3 +98,24 @@ export const SLIP_WARNINGS: Record<SlipWarning, string> = {
   overflow:
     'Tekst ne staje u tri reda od 35 znakova i odsečen je na uplatnici.',
 };
+
+export function importIssueText(issue: ImportIssue): string {
+  switch (issue.code) {
+    case 'not-json':
+      return 'Datoteka nije ispravan JSON.';
+    case 'not-backup':
+      return 'Ovo nije rezervna kopija Uplatnice.';
+    case 'version':
+      return 'Datoteka nema ispravnu verziju šeme.';
+    case 'newer':
+      return `Datoteku je napravila novija verzija aplikacije (šema ${String(issue.version)}). Osvežite stranicu i pokušajte ponovo.`;
+    case 'invalid':
+      return `${issue.path || 'Datoteka'}: neispravna vrednost.`;
+    case 'unknown-keys':
+      return `${issue.path || 'Datoteka'}: nepoznata polja ${issue.keys.join(', ')}.`;
+    case 'duplicate':
+      return `${issue.path}: zapis se ponavlja.`;
+    case 'missing-ref':
+      return `${issue.path}: upućuje na zapis kojeg nema u datoteci.`;
+  }
+}

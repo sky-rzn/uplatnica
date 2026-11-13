@@ -1,7 +1,6 @@
 import { useState } from 'preact/hooks';
 import { todayIso } from '../../core/date';
 import { resolveOccurrence } from '../../core/schedule';
-import { cyrillicToLatin } from '../../core/serbia/translit';
 import {
   SLIPS_PER_PAGE,
   slipShapes,
@@ -9,6 +8,7 @@ import {
 } from '../../core/uplatnica/layout';
 import { buildSlip, slipInput, type Slip } from '../../core/uplatnica/slip';
 import { useLive } from '../data';
+import { download, fileSlug } from '../download';
 import { SLIP_WARNINGS, qrIssueText } from '../messages';
 import { periodLabel } from '../period-text';
 import type { PeriodRef } from '../router';
@@ -19,29 +19,6 @@ interface PrintedSlip {
   title: string;
   slip: Slip;
   shapes: Shape[];
-}
-
-function fileSlug(s: string): string {
-  return cyrillicToLatin(s)
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/đ/gi, 'dj')
-    .replace(/[^A-Za-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-    .toLowerCase();
-}
-
-function download(bytes: Uint8Array, name: string): void {
-  const url = URL.createObjectURL(
-    new Blob([bytes as Uint8Array<ArrayBuffer>], { type: 'application/pdf' }),
-  );
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = name;
-  a.click();
-  setTimeout(() => {
-    URL.revokeObjectURL(url);
-  }, 0);
 }
 
 function Problems({ item }: { item: PrintedSlip }) {
@@ -108,7 +85,8 @@ export function PrintView({ items }: { items: readonly PeriodRef[] }) {
       const bytes = await slipsPdf(slips.map((s) => s.shapes));
       const [only] = slips;
       download(
-        bytes,
+        bytes as Uint8Array<ArrayBuffer>,
+        'application/pdf',
         slips.length === 1 && only
           ? `uplatnica-${fileSlug(only.title)}.pdf`
           : `uplatnice-${todayIso()}.pdf`,

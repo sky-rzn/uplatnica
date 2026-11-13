@@ -895,3 +895,19 @@ button.tl-block:focus-visible {
     border-radius: 12px 12px 0 0;
   }
 }
+
+.data-view > .card {
+  display: grid;
+  align-items: stretch;
+  margin-bottom: 0.75rem;
+}
+
+.data-view h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.data-view .card p,
+.data-view .card ul {
+  margin: 0;
+}

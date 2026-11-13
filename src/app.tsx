@@ -1,19 +1,24 @@
 import type { Repo } from './db/repo';
+import { todayIso } from './core/date';
+import { BACKUP_REMIND_DAYS, backupAge, useLastBackup } from './ui/backup-mark';
+import { DataView } from './ui/backup/DataView';
 import { BillEditor } from './ui/bill-editor/BillEditor';
 import { BillsView } from './ui/bills/BillsView';
 import { ListView } from './ui/list/ListView';
-import { RepoContext } from './ui/data';
+import { RepoContext, useLive } from './ui/data';
 import { ProfilesView } from './ui/profiles/ProfilesView';
 import { href, useRoute, type Route } from './ui/router';
 import { SectionsView } from './ui/sections/SectionsView';
 import { TimelineView } from './ui/timeline/TimelineView';
 import { PrintView } from './ui/uplatnica/PrintView';
+import { plural } from './ui/period-text';
 
 const NAV: readonly { route: Route; label: string }[] = [
   { route: { name: 'timeline' }, label: 'Pregled' },
   { route: { name: 'bills' }, label: 'Računi' },
   { route: { name: 'sections' }, label: 'Odeljci' },
   { route: { name: 'profiles' }, label: 'Platioci' },
+  { route: { name: 'data' }, label: 'Podaci' },
 ];
 
 function Page({ route }: { route: Route }) {
@@ -32,7 +37,25 @@ function Page({ route }: { route: Route }) {
       return <ProfilesView />;
     case 'print':
       return <PrintView items={route.items} />;
+    case 'data':
+      return <DataView />;
   }
+}
+
+function BackupReminder() {
+  const hasBills = useLive(async (r) => (await r.listBills()).length > 0);
+  const age = backupAge(useLastBackup(), todayIso());
+  if (!hasBills || (age !== null && age < BACKUP_REMIND_DAYS)) return null;
+  return (
+    <>
+      {' '}
+      <a href={href({ name: 'data' })}>
+        {age === null
+          ? 'Napravite rezervnu kopiju.'
+          : `Poslednja rezervna kopija je od pre ${String(age)} ${plural(age, 'dan', 'dana')}.`}
+      </a>
+    </>
+  );
 }
 
 export function App({ repo }: { repo: Repo }) {
@@ -64,7 +87,10 @@ export function App({ repo }: { repo: Repo }) {
       <main class={route.name === 'timeline' ? 'wide' : undefined}>
         <Page route={route} />
       </main>
-      <footer>Svi podaci ostaju u ovom pregledaču.</footer>
+      <footer>
+        Svi podaci ostaju u ovom pregledaču.
+        <BackupReminder />
+      </footer>
     </RepoContext.Provider>
   );
 }
