@@ -6,6 +6,7 @@ import {
 } from '../../core/forms/profile';
 import type { Profile } from '../../core/model';
 import { IntegrityError, newId } from '../../db/repo';
+import { t } from '../../i18n';
 import { useLive, useRepo } from '../data';
 import { TextField, hasErrors, useFeedback } from '../form';
 
@@ -22,7 +23,7 @@ function ProfileForm(props: { profile?: Profile; onDone: () => void }) {
   return (
     <form
       class="card form"
-      aria-label={props.profile ? 'Izmena platioca' : 'Novi platilac'}
+      aria-label={props.profile ? t.profiles.editForm : t.profiles.add}
       noValidate
       onSubmit={(e) => {
         e.preventDefault();
@@ -34,7 +35,7 @@ function ProfileForm(props: { profile?: Profile; onDone: () => void }) {
       <TextField
         id="profile-name"
         name="name"
-        label="Ime i prezime"
+        label={t.profiles.name}
         feedback={fb}
         value={draft.name}
         onInput={(name) => {
@@ -44,7 +45,7 @@ function ProfileForm(props: { profile?: Profile; onDone: () => void }) {
       <TextField
         id="profile-address"
         name="address"
-        label="Adresa"
+        label={t.profiles.address}
         feedback={fb}
         multiline
         value={draft.address}
@@ -55,8 +56,8 @@ function ProfileForm(props: { profile?: Profile; onDone: () => void }) {
       <TextField
         id="profile-jmbg"
         name="jmbg"
-        label="JMBG"
-        hint="Neobavezno. Koristi se u šablonima poziva na broj kao {JMBG}."
+        label={t.profiles.jmbg}
+        hint={t.profiles.jmbgHint}
         feedback={fb}
         input={{ inputMode: 'numeric', autoComplete: 'off' }}
         value={draft.jmbg}
@@ -67,8 +68,8 @@ function ProfileForm(props: { profile?: Profile; onDone: () => void }) {
       <TextField
         id="profile-pib"
         name="pib"
-        label="PIB"
-        hint="Neobavezno, za preduzetnike. U šablonima: {PIB}."
+        label={t.profiles.pib}
+        hint={t.profiles.pibHint}
         feedback={fb}
         input={{ inputMode: 'numeric', autoComplete: 'off' }}
         value={draft.pib}
@@ -78,10 +79,10 @@ function ProfileForm(props: { profile?: Profile; onDone: () => void }) {
       />
       <div class="actions">
         <button type="submit" class="primary">
-          Sačuvaj
+          {t.common.save}
         </button>
         <button type="button" onClick={props.onDone}>
-          Otkaži
+          {t.common.cancel}
         </button>
       </div>
     </form>
@@ -95,15 +96,13 @@ export function ProfilesView() {
   const [message, setMessage] = useState('');
 
   const remove = async (p: Profile) => {
-    if (!confirm(`Obrisati platioca „${p.name}“?`)) return;
+    if (!confirm(t.profiles.confirmDelete(p.name))) return;
     try {
       await repo.deleteProfile(p.id);
       setMessage('');
     } catch (e) {
       if (!(e instanceof IntegrityError)) throw e;
-      setMessage(
-        `Platilac „${p.name}“ se koristi u računima. Prvo ih prebacite na drugog platioca ili obrišite.`,
-      );
+      setMessage(t.profiles.inUse(p.name));
     }
   };
 
@@ -112,7 +111,7 @@ export function ProfilesView() {
   return (
     <section>
       <div class="toolbar">
-        <h1>Platioci</h1>
+        <h1>{t.profiles.title}</h1>
         <button
           type="button"
           class="primary"
@@ -121,13 +120,10 @@ export function ProfilesView() {
             setEditing('new');
           }}
         >
-          Novi platilac
+          {t.profiles.add}
         </button>
       </div>
-      <p class="lead">
-        Platilac je onaj ko plaća: vi, supružnik ili vaša radnja. Ime i adresa
-        idu u polje „platilac“ na uplatnici.
-      </p>
+      <p class="lead">{t.profiles.lead}</p>
       {message && (
         <p class="error" role="alert">
           {message}
@@ -141,7 +137,7 @@ export function ProfilesView() {
         />
       )}
       {sorted.length === 0 && editing === null && (
-        <p class="empty">Još nema platilaca.</p>
+        <p class="empty">{t.profiles.empty}</p>
       )}
       <ul class="cards">
         {sorted.map((p) =>
@@ -161,9 +157,9 @@ export function ProfilesView() {
                 {p.address && <div class="muted pre">{p.address}</div>}
                 {(p.jmbg ?? p.pib) && (
                   <div class="muted">
-                    {p.jmbg && `JMBG ${p.jmbg}`}
+                    {p.jmbg && `${t.profiles.jmbg} ${p.jmbg}`}
                     {p.jmbg && p.pib && ' · '}
-                    {p.pib && `PIB ${p.pib}`}
+                    {p.pib && `${t.profiles.pib} ${p.pib}`}
                   </div>
                 )}
               </div>
@@ -175,14 +171,14 @@ export function ProfilesView() {
                     setEditing(p.id);
                   }}
                 >
-                  Izmeni
+                  {t.common.edit}
                 </button>
                 <button
                   type="button"
                   class="danger"
                   onClick={() => void remove(p)}
                 >
-                  Obriši
+                  {t.common.delete}
                 </button>
               </div>
             </li>

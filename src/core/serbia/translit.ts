@@ -49,3 +49,21 @@ export function cyrillicToLatin(input: string): string {
 export function hasCyrillic(s: string): boolean {
   return /[Ѐ-ӿ]/.test(s);
 }
+
+// prettier-ignore
+const LATIN: Record<string, string> = {
+  a: 'а', b: 'б', c: 'ц', č: 'ч', ć: 'ћ', d: 'д', dž: 'џ', đ: 'ђ', e: 'е', f: 'ф',
+  g: 'г', h: 'х', i: 'и', j: 'ј', k: 'к', l: 'л', lj: 'љ', m: 'м', n: 'н', nj: 'њ',
+  o: 'о', p: 'п', r: 'р', s: 'с', š: 'ш', t: 'т', u: 'у', v: 'в', z: 'з', ž: 'ж',
+};
+
+/** Serbian Latin to Cyrillic; letters outside the Serbian alphabet stay as they are. */
+export function latinToCyrillic(input: string): string {
+  return input.replace(/[dD][žŽ]|[lLnN][jJ]|\p{L}/gu, (ch) => {
+    const cyr = LATIN[ch.toLowerCase()];
+    if (cyr === undefined) return ch;
+    return ch.charAt(0) === ch.charAt(0).toLowerCase()
+      ? cyr
+      : cyr.toUpperCase();
+  });
+}

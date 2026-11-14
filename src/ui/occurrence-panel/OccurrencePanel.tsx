@@ -12,11 +12,12 @@ import { parseIpsQr, type ParsedIpsQr } from '../../core/serbia/ipsQr';
 import { applyScanToOccurrence, type ScanNote } from '../../core/forms/scan';
 import type { Block } from '../../core/timeline';
 import { buildSlip, slipInput, type Slip } from '../../core/uplatnica/slip';
+import { t } from '../../i18n';
 import { useRepo } from '../data';
 import { TextField, hasErrors, useFeedback } from '../form';
 import { formatDate } from '../format';
 import { qrIssueText } from '../messages';
-import { STATUS_ICONS, STATUS_LABELS, periodLabel } from '../period-text';
+import { STATUS_ICONS, periodLabel, statusLabel } from '../period-text';
 import { navigate } from '../router';
 import { QrCode } from '../uplatnica/QrCode';
 import { QrFields } from '../uplatnica/QrFields';
@@ -24,10 +25,9 @@ import { Scanner } from '../scanner/Scanner';
 import { ScanFailure, ScanNotes, readScan } from '../scanner/scan-result';
 
 function QrDetails({ slip }: { slip: Slip | null }) {
-  if (!slip)
-    return <p class="hint">Ispravite greške u formi da bi se video QR kod.</p>;
+  if (!slip) return <p class="hint">{t.occurrence.fixErrors}</p>;
   const { qr } = slip;
-  if (!qr) return <p class="hint">Unesite iznos da bi se napravio QR kod.</p>;
+  if (!qr) return <p class="hint">{t.occurrence.enterAmount}</p>;
   if (!qr.ok)
     return (
       <ul class="error">
@@ -40,11 +40,9 @@ function QrDetails({ slip }: { slip: Slip | null }) {
   if (!parsed.ok) return null;
   return (
     <div class="qr-box">
-      <QrCode text={qr.text} ecc={qr.ecc} label="IPS QR kod za uplatu" />
+      <QrCode text={qr.text} ecc={qr.ecc} label={t.occurrence.qrLabel} />
       <QrFields qr={parsed.value} />
-      <p class="hint">
-        Skenirajte kod u aplikaciji banke i proverite podatke pre potvrde.
-      </p>
+      <p class="hint">{t.occurrence.qrHint}</p>
     </div>
   );
 }
@@ -60,6 +58,7 @@ export function OccurrencePanel(props: {
   const { bill, block, onClose } = props;
   const { occ } = block;
   const repo = useRepo();
+  const o = t.occurrence;
   const ctx = { bill, occ, profile: props.profile, today: todayIso() };
   const [initial] = useState(() => {
     const draft = occurrenceToDraft(ctx, formatAmount);
@@ -211,22 +210,19 @@ export function OccurrencePanel(props: {
             </h2>
             <p class={`status st-${block.status}`}>
               <span aria-hidden="true">{STATUS_ICONS[block.status]} </span>
-              {STATUS_LABELS[block.status]}
+              {statusLabel(block.status)}
               {occ.stored?.paidAt !== undefined &&
                 ` ${formatDate(occ.stored.paidAt)}`}
             </p>
           </div>
-          <button type="button" aria-label="Zatvori" onClick={onClose}>
+          <button type="button" aria-label={t.common.close} onClick={onClose}>
             ×
           </button>
         </header>
 
         {occ.outOfSchedule && (
           <div class="card notice">
-            <p>
-              Ovaj period više nije u rasporedu računa. Podaci su sačuvani da se
-              uplata ne bi izgubila.
-            </p>
+            <p>{o.outOfSchedule}</p>
             <button
               type="button"
               class="danger"
@@ -235,7 +231,7 @@ export function OccurrencePanel(props: {
                 void remove();
               }}
             >
-              Obriši zapis
+              {o.deleteRecord}
             </button>
           </div>
         )}
@@ -251,7 +247,7 @@ export function OccurrencePanel(props: {
                   void takeAccount(newAccount.scanned);
                 }}
               >
-                Upiši novi račun primaoca u račun
+                {o.takeAccount}
               </button>
             )}
           </div>
@@ -259,14 +255,14 @@ export function OccurrencePanel(props: {
 
         <form
           class="form"
-          aria-label="Period"
+          aria-label={o.form}
           noValidate
           onSubmit={(e) => {
             e.preventDefault();
             void run('save');
           }}
         >
-          {text('amount', 'Iznos (RSD)', {
+          {text('amount', t.common.amountRsd, {
             input: {
               inputMode: 'decimal',
               autoComplete: 'off',
@@ -274,19 +270,19 @@ export function OccurrencePanel(props: {
             },
             hint:
               bill.amountMode === 'variable'
-                ? 'Iznos sa računa za ovaj period.'
-                : 'Ostavite prazno za iznos iz računa.',
+                ? o.amountVariableHint
+                : o.amountFixedHint,
           })}
-          {text('dueDate', 'Rok plaćanja', { input: { type: 'date' } })}
+          {text('dueDate', t.common.dueDate, { input: { type: 'date' } })}
           {text(
             'reference',
-            model ? `Poziv na broj (model ${model})` : 'Poziv na broj',
+            model ? o.referenceModel(model) : t.common.reference,
             {
               input: { autoComplete: 'off' },
-              hint: 'Ako je na računu drugačiji, prepišite ga.',
+              hint: o.referenceHint,
             },
           )}
-          {text('note', 'Napomena', { multiline: true })}
+          {text('note', t.common.note, { multiline: true })}
 
           <div class="actions">
             <button
@@ -298,7 +294,7 @@ export function OccurrencePanel(props: {
                 setScanFailure(undefined);
               }}
             >
-              Skeniraj račun
+              {t.common.scanBill}
             </button>
             <button
               type="button"
@@ -308,7 +304,7 @@ export function OccurrencePanel(props: {
                 setShowQr(!showQr);
               }}
             >
-              QR kod
+              {o.qr}
             </button>
             <button
               type="button"
@@ -317,28 +313,28 @@ export function OccurrencePanel(props: {
                 void printSlip();
               }}
             >
-              Uplatnica
+              {o.slip}
             </button>
           </div>
           {scanning && (
-            <section id="occ-scan" aria-label="Skeniranje računa">
+            <section id="occ-scan" aria-label={t.common.scanning}>
               <Scanner onScan={onScan} />
               {scanFailure && <ScanFailure messages={scanFailure} />}
             </section>
           )}
           {showQr && (
-            <section id="occ-qr" aria-label="IPS QR kod">
+            <section id="occ-qr" aria-label={o.qrSection}>
               <QrDetails slip={slip} />
             </section>
           )}
 
           <fieldset>
-            <legend>Uplata</legend>
+            <legend>{o.payment}</legend>
             <div class="row">
-              {text('paidAt', 'Datum uplate', { input: { type: 'date' } })}
-              {text('paidAmount', 'Uplaćeno (RSD)', {
+              {text('paidAt', o.paidAt, { input: { type: 'date' } })}
+              {text('paidAmount', o.paidAmount, {
                 input: { inputMode: 'decimal', autoComplete: 'off' },
-                hint: 'Prazno: ceo iznos.',
+                hint: o.paidAmountHint,
               })}
             </div>
           </fieldset>
@@ -352,7 +348,7 @@ export function OccurrencePanel(props: {
                   void run('unpay');
                 }}
               >
-                Poništi uplatu
+                {o.unpay}
               </button>
             ) : (
               <button
@@ -363,7 +359,7 @@ export function OccurrencePanel(props: {
                   void run('pay');
                 }}
               >
-                Plaćeno
+                {o.pay}
               </button>
             )}
             <button
@@ -371,7 +367,7 @@ export function OccurrencePanel(props: {
               class={paid ? 'primary' : undefined}
               disabled={busy}
             >
-              Sačuvaj
+              {t.common.save}
             </button>
           </div>
         </form>

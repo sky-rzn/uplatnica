@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   cyrillicToLatin,
   hasCyrillic,
+  latinToCyrillic,
 } from '../../../../src/core/serbia/translit';
 
 describe('cyrillicToLatin', () => {
@@ -19,5 +20,20 @@ describe('cyrillicToLatin', () => {
   ])('%s', (cyr, lat) => {
     expect(cyrillicToLatin(cyr)).toBe(lat);
     expect(hasCyrillic(cyrillicToLatin(cyr))).toBe(false);
+  });
+});
+
+describe('latinToCyrillic', () => {
+  it.each([
+    ['Porez na imovinu', 'Порез на имовину'],
+    ['Đorđe Čvorović', 'Ђорђе Чворовић'],
+    ['Ljubica Njegoš', 'Љубица Његош'],
+    ['LJUBICA NJEGOŠ', 'ЉУБИЦА ЊЕГОШ'],
+    ['Džep DŽEP', 'Џеп ЏЕП'],
+    ['Ćuprija 12', 'Ћуприја 12'],
+    ['Excel', 'Еxцел'],
+  ])('%s', (lat, cyr) => {
+    expect(latinToCyrillic(lat)).toBe(cyr);
+    expect(cyrillicToLatin(cyr)).toBe(lat);
   });
 });

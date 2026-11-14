@@ -14,7 +14,9 @@ import type { Bill, Profile, ReferenceModel, Section } from '../../core/model';
 import { formatAmount } from '../../core/money';
 import { formatAccount, normalizeAccount } from '../../core/serbia/account';
 import { PAYMENT_BASES, paymentBasis } from '../../core/serbia/paymentCodes';
+import { paymentBasisName } from '../payment-basis';
 import { newId } from '../../db/repo';
+import { t } from '../../i18n';
 import { useLive, useRepo } from '../data';
 import {
   CheckField,
@@ -29,29 +31,11 @@ import { issueText } from '../messages';
 import { href, navigate } from '../router';
 import { Scanner } from '../scanner/Scanner';
 import { ScanFailure, ScanNotes, readScan } from '../scanner/scan-result';
-import { EVERY_LABELS } from '../schedule-text';
+import { everyLabel } from '../schedule-text';
 
-const MODELS: readonly { value: ReferenceModel; label: string }[] = [
-  { value: '', label: 'bez modela' },
-  { value: '97', label: '97' },
-  { value: '11', label: '11' },
-];
-
-const DUE_KINDS: readonly { value: DueKind; label: string }[] = [
-  { value: 'day', label: 'određeni dan u mesecu' },
-  { value: 'last', label: 'poslednji dan u mesecu' },
-  { value: 'daysFromStart', label: 'broj dana od početka perioda' },
-];
-
-const MONTH_OFFSETS = Array.from({ length: 13 }, (_, i) => ({
-  value: String(i),
-  label:
-    i === 0
-      ? 'istog meseca kad počinje period'
-      : i === 1
-        ? 'narednog meseca'
-        : `${String(i)}. meseca posle početka`,
-}));
+const MODELS: readonly ReferenceModel[] = ['', '97', '11'];
+const DUE_KINDS: readonly DueKind[] = ['day', 'last', 'daysFromStart'];
+const MONTH_OFFSETS = Array.from({ length: 13 }, (_, i) => i);
 
 type TextKey = {
   [K in keyof BillDraft]: BillDraft[K] extends string ? K : never;
@@ -63,7 +47,7 @@ function PaymentCodeList() {
       {['2', '1'].flatMap((form) =>
         PAYMENT_BASES.map((b) => (
           <option key={form + b.code} value={form + b.code}>
-            {b.sr}
+            {paymentBasisName(b)}
           </option>
         )),
       )}
@@ -78,6 +62,7 @@ function Editor(props: {
   qr?: string;
 }) {
   const repo = useRepo();
+  const e = t.billEditor;
   const today = todayIso();
   const [id] = useState(() => props.bill?.id ?? newId());
   const [initial] = useState(() => {
@@ -163,13 +148,7 @@ function Editor(props: {
   };
 
   const remove = async () => {
-    if (
-      !props.bill ||
-      !confirm(
-        `Obrisati račun „${props.bill.title}“ zajedno sa svim unetim iznosima i uplatama?`,
-      )
-    )
-      return;
+    if (!props.bill || !confirm(e.confirmDelete(props.bill.title))) return;
     await repo.deleteBill(props.bill.id);
     navigate({ name: 'bills' });
   };
@@ -177,10 +156,10 @@ function Editor(props: {
   return (
     <form
       class="form bill-editor"
-      aria-label={props.bill ? 'Izmena računa' : 'Novi račun'}
+      aria-label={props.bill ? e.editForm : t.common.newBill}
       noValidate
-      onSubmit={(e) => {
-        e.preventDefault();
+      onSubmit={(ev) => {
+        ev.preventDefault();
         void save();
       }}
     >
@@ -194,14 +173,11 @@ function Editor(props: {
             setScanFailure(undefined);
           }}
         >
-          Popuni iz QR koda
+          {e.fillFromQr}
         </button>
-        <p class="hint">
-          Primalac, račun, šifra, svrha i poziv na broj preuzimaju se sa IPS QR
-          koda na računu.
-        </p>
+        <p class="hint">{e.fillFromQrHint}</p>
         {scanning && (
-          <section id="bill-scan" aria-label="Skeniranje računa">
+          <section id="bill-scan" aria-label={t.common.scanning}>
             <Scanner onScan={onScan} />
           </section>
         )}
@@ -210,14 +186,12 @@ function Editor(props: {
       </div>
 
       <fieldset>
-        <legend>Osnovno</legend>
-        {text('title', 'Naziv', {
-          hint: 'Kako će se račun zvati na dijagramu, na primer „Infostan“.',
-        })}
+        <legend>{e.basics}</legend>
+        {text('title', t.common.name, { hint: e.titleHint })}
         <SelectField
           id="bill-section"
           name="sectionId"
-          label="Odeljak"
+          label={t.common.section}
           feedback={fb}
           value={draft.sectionId}
           options={props.sections
@@ -230,7 +204,7 @@ function Editor(props: {
         <SelectField
           id="bill-profile"
           name="profileId"
-          label="Platilac"
+          label={t.common.payer}
           feedback={fb}
           value={draft.profileId}
           options={props.profiles.map((p) => ({ value: p.id, label: p.name }))}
@@ -241,10 +215,10 @@ function Editor(props: {
       </fieldset>
 
       <fieldset>
-        <legend>Primalac</legend>
-        {text('payeeName', 'Naziv primaoca')}
-        {text('payeeAddress', 'Adresa primaoca', { multiline: true })}
-        {text('account', 'Račun primaoca', {
+        <legend>{e.payee}</legend>
+        {text('payeeName', e.payeeName)}
+        {text('payeeAddress', e.payeeAddress, { multiline: true })}
+        {text('account', e.account, {
           input: {
             inputMode: 'numeric',
             autoComplete: 'off',
@@ -255,37 +229,29 @@ function Editor(props: {
       </fieldset>
 
       <fieldset>
-        <legend>Plaćanje</legend>
-        {text('paymentCode', 'Šifra plaćanja', {
+        <legend>{e.payment}</legend>
+        {text('paymentCode', t.common.paymentCode, {
           input: { inputMode: 'numeric', list: 'payment-codes', maxLength: 3 },
-          hint:
-            basis?.sr ??
-            'Prva cifra: 1 gotovinsko, 2 bezgotovinsko plaćanje. Česte šifre: 289, 253, 221.',
+          hint: (basis && paymentBasisName(basis)) ?? e.paymentCodeHint,
         })}
         <PaymentCodeList />
-        {text('purpose', 'Svrha uplate')}
+        {text('purpose', e.purpose)}
         <div class="row">
           <SelectField
             id="bill-model"
             name="model"
-            label="Model"
+            label={e.model}
             feedback={fb}
             value={draft.model}
-            options={MODELS}
+            options={MODELS.map((m) => ({ value: m, label: m || e.noModel }))}
             onChange={(model) => {
               set({ model });
             }}
           />
-          {text('reference', 'Poziv na broj', {
+          {text('reference', t.common.reference, {
             input: { autoComplete: 'off' },
-            hint: (
-              <>
-                Može šablon: {'{JMBG}'}, {'{PIB}'}, {'{YYYY}'}, {'{YY}'},{' '}
-                {'{MM}'}, {'{Q}'} i sopstvena polja, npr. {'{NAPLATNI:11}'}.
-                {draft.model === '97' &&
-                  ' Kontrolni broj za model 97 se dodaje sam.'}
-              </>
-            ),
+            hint:
+              e.referenceHint + (draft.model === '97' ? e.referenceHint97 : ''),
           })}
         </div>
         {vars.map((name) => (
@@ -293,7 +259,7 @@ function Editor(props: {
             key={name}
             id={`bill-var-${name}`}
             name={`referenceVars.${name}`}
-            label={`Vrednost za {${name}}`}
+            label={e.varValue(name)}
             feedback={fb}
             input={{ autoComplete: 'off' }}
             value={draft.referenceVars[name] ?? ''}
@@ -304,7 +270,7 @@ function Editor(props: {
         ))}
         {preview.reference && (
           <p class="preview" aria-live="polite">
-            Poziv na broj za period {preview.reference.periodKey}:{' '}
+            {e.referencePreview(preview.reference.periodKey)}
             <output>
               {draft.model ? `${draft.model} ` : ''}
               {preview.reference.value}
@@ -314,8 +280,8 @@ function Editor(props: {
       </fieldset>
 
       <fieldset>
-        <legend>Iznos</legend>
-        <div class="radios" role="radiogroup" aria-label="Vrsta iznosa">
+        <legend>{e.amount}</legend>
+        <div class="radios" role="radiogroup" aria-label={e.amountKind}>
           <label class="check">
             <input
               type="radio"
@@ -325,7 +291,7 @@ function Editor(props: {
                 set({ amountMode: 'fixed' });
               }}
             />
-            Isti iznos svaki put
+            {e.fixed}
           </label>
           <label class="check">
             <input
@@ -336,11 +302,11 @@ function Editor(props: {
                 set({ amountMode: 'variable' });
               }}
             />
-            Iznos se unosi po prijemu računa
+            {e.variable}
           </label>
         </div>
         {draft.amountMode === 'fixed' &&
-          text('amount', 'Iznos (RSD)', {
+          text('amount', t.common.amountRsd, {
             input: {
               inputMode: 'decimal',
               autoComplete: 'off',
@@ -350,8 +316,8 @@ function Editor(props: {
       </fieldset>
 
       <fieldset>
-        <legend>Rokovi</legend>
-        <div class="radios" role="radiogroup" aria-label="Vrsta rasporeda">
+        <legend>{e.schedule}</legend>
+        <div class="radios" role="radiogroup" aria-label={e.scheduleKind}>
           <label class="check">
             <input
               type="radio"
@@ -361,7 +327,7 @@ function Editor(props: {
                 set({ scheduleKind: 'periodic' });
               }}
             />
-            Periodično
+            {e.periodic}
           </label>
           <label class="check">
             <input
@@ -375,7 +341,7 @@ function Editor(props: {
                 });
               }}
             />
-            Određeni datumi
+            {e.dates}
           </label>
         </div>
 
@@ -384,53 +350,59 @@ function Editor(props: {
             <SelectField
               id="bill-every"
               name="everyMonths"
-              label="Period"
+              label={e.every}
               feedback={fb}
               value={String(draft.everyMonths)}
               options={EVERY_MONTHS.map((m) => ({
                 value: String(m),
-                label: EVERY_LABELS[m],
+                label: everyLabel(m),
               }))}
               onChange={(v) => {
                 set({ everyMonths: Number(v) as BillDraft['everyMonths'] });
               }}
             />
             <div class="row">
-              {text('start', 'Prvi period', {
-                input: { type: 'month', placeholder: 'GGGG-MM' },
+              {text('start', e.start, {
+                input: { type: 'month', placeholder: e.monthPlaceholder },
               })}
-              {text('end', 'Poslednji period', {
-                input: { type: 'month', placeholder: 'GGGG-MM' },
-                hint: 'Neobavezno.',
+              {text('end', e.end, {
+                input: { type: 'month', placeholder: e.monthPlaceholder },
+                hint: t.common.optional,
               })}
             </div>
             <SelectField
               id="bill-due-kind"
               name="dueKind"
-              label="Rok plaćanja"
+              label={t.common.dueDate}
               feedback={fb}
               value={draft.dueKind}
-              options={DUE_KINDS}
+              options={DUE_KINDS.map((k) => ({
+                value: k,
+                label: e.dueKind[k],
+              }))}
               onChange={(dueKind) => {
                 set({ dueKind });
               }}
             />
             {draft.dueKind === 'daysFromStart' ? (
-              text('daysFromStart', 'Dana od prvog dana perioda', {
+              text('daysFromStart', e.daysFromStart, {
                 input: { inputMode: 'numeric' },
-                hint: 'Porez na imovinu: 44 (45. dan tromesečja).',
+                hint: e.daysFromStartHint,
               })
             ) : (
               <div class="row">
                 {draft.dueKind === 'day' &&
-                  text('dueDay', 'Dan', { input: { inputMode: 'numeric' } })}
+                  text('dueDay', e.day, { input: { inputMode: 'numeric' } })}
                 <SelectField
                   id="bill-month-offset"
                   name="monthOffset"
-                  label="Mesec"
+                  label={e.month}
                   feedback={fb}
                   value={draft.monthOffset}
-                  options={MONTH_OFFSETS}
+                  options={MONTH_OFFSETS.map((i) => ({
+                    value: String(i),
+                    label: e.monthOffset(i),
+                  }))}
                   onChange={(monthOffset) => {
                     set({ monthOffset });
                   }}
@@ -438,7 +410,7 @@ function Editor(props: {
               </div>
             )}
             <CheckField
-              label="Ako rok padne na vikend ili praznik, pomeri ga na prvi radni dan"
+              label={e.shiftToWorkday}
               checked={draft.shiftToWorkday}
               onChange={(shiftToWorkday) => {
                 set({ shiftToWorkday });
@@ -452,7 +424,7 @@ function Editor(props: {
                 <Field
                   id={`bill-date-${String(i)}`}
                   name={`dates.${String(i)}`}
-                  label={`Datum ${String(i + 1)}`}
+                  label={e.date(i + 1)}
                   feedback={fb}
                 >
                   {(aria) => (
@@ -460,9 +432,9 @@ function Editor(props: {
                       type="date"
                       {...aria}
                       value={date}
-                      onInput={(e) => {
+                      onInput={(ev) => {
                         const dates = [...draft.dates];
-                        dates[i] = e.currentTarget.value;
+                        dates[i] = ev.currentTarget.value;
                         set({ dates });
                       }}
                     />
@@ -470,12 +442,12 @@ function Editor(props: {
                 </Field>
                 <button
                   type="button"
-                  aria-label={`Ukloni datum ${String(i + 1)}`}
+                  aria-label={e.removeDate(i + 1)}
                   onClick={() => {
                     set({ dates: draft.dates.filter((_, j) => j !== i) });
                   }}
                 >
-                  Ukloni
+                  {e.remove}
                 </button>
               </div>
             ))}
@@ -485,7 +457,7 @@ function Editor(props: {
                 set({ dates: [...draft.dates, ''] });
               }}
             >
-              Dodaj datum
+              {e.addDate}
             </button>
             {datesError && (
               <p class="error" role="alert">
@@ -494,26 +466,26 @@ function Editor(props: {
             )}
           </div>
         )}
-        {text('graceDays', 'Dana tolerancije posle roka', {
+        {text('graceDays', e.graceDays, {
           input: { inputMode: 'numeric' },
-          hint: 'Neobavezno. Toliko dana posle roka račun se još ne smatra docnjom.',
+          hint: e.graceDaysHint,
         })}
         {preview.next.length > 0 && (
           <p class="preview" aria-live="polite">
             {preview.next.some((p) => p.dueDate >= today)
-              ? 'Sledeći rokovi: '
-              : 'Poslednji rok: '}
+              ? e.nextDues
+              : e.lastDue}
             {preview.next.map((p) => formatDate(p.dueDate)).join(', ')}
           </p>
         )}
       </fieldset>
 
       <fieldset>
-        <legend>Ostalo</legend>
-        {text('notes', 'Napomena', { multiline: true })}
+        <legend>{e.other}</legend>
+        {text('notes', t.common.note, { multiline: true })}
         {props.bill && (
           <CheckField
-            label="Arhiviran (skriven sa dijagrama)"
+            label={t.common.archivedHidden}
             checked={draft.archived}
             onChange={(archived) => {
               set({ archived });
@@ -524,14 +496,14 @@ function Editor(props: {
 
       <div class="actions sticky">
         <button type="submit" class="primary" disabled={saving}>
-          Sačuvaj
+          {t.common.save}
         </button>
         <a class="button" href={href({ name: 'bills' })}>
-          Otkaži
+          {t.common.cancel}
         </a>
         {props.bill && (
           <button type="button" class="danger" onClick={() => void remove()}>
-            Obriši
+            {t.common.delete}
           </button>
         )}
       </div>
@@ -552,13 +524,13 @@ export function BillEditor({ id, qr }: { id: string | null; qr?: string }) {
   if (id !== null && !data.bill)
     return (
       <section>
-        <h1>Račun nije pronađen</h1>
-        <a href={href({ name: 'bills' })}>Nazad na račune</a>
+        <h1>{t.billEditor.notFound}</h1>
+        <a href={href({ name: 'bills' })}>{t.billEditor.backToBills}</a>
       </section>
     );
   return (
     <section>
-      <h1>{data.bill ? data.bill.title : 'Novi račun'}</h1>
+      <h1>{data.bill ? data.bill.title : t.common.newBill}</h1>
       <Editor
         key={id ?? `new:${qr ?? ''}`}
         {...(data.bill ? { bill: data.bill } : {})}

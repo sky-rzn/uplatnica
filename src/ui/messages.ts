@@ -2,141 +2,122 @@ import type { Issue } from '../core/forms/issues';
 import type { ScanNote } from '../core/forms/scan';
 import { formatAccount } from '../core/serbia/account';
 import type { IpsQrIssue } from '../core/serbia/ipsQr';
-import type { ImportIssue } from '../io/import';
-import type { ReferenceError } from '../core/serbia/reference';
 import type { SlipWarning } from '../core/uplatnica/slip';
-
-const REFERENCE: Record<ReferenceError, string> = {
-  empty: 'Poziv na broj je prazan.',
-  chars: 'Poziv na broj sadrži nedozvoljene znakove.',
-  length: 'Poziv na broj je duži od 23 znaka.',
-  structure: 'Poziv na broj nema strukturu koju model zahteva.',
-  checksum: 'Kontrolni broj u pozivu na broj nije ispravan.',
-};
+import { t } from '../i18n';
+import type { ImportIssue } from '../io/import';
 
 export function issueText(issue: Issue): string {
+  const m = t.issue;
   switch (issue.code) {
     case 'required':
-      return 'Obavezno polje.';
+      return m.required;
     case 'too-long':
-      return `Najviše ${String(issue.max)} znakova, koliko staje u IPS QR kod.`;
+      return m.tooLong(issue.max);
     case 'chars':
-      return 'Sadrži znakove koje IPS QR kod ne dozvoljava.';
+      return m.chars;
     case 'integer':
-      return `Unesite ceo broj od ${String(issue.min)} do ${String(issue.max)}.`;
+      return m.integer(issue.min, issue.max);
     case 'not-found':
-      return 'Izabrana stavka više ne postoji.';
+      return m.notFound;
     case 'color':
-      return 'Boja u obliku #rrggbb.';
+      return m.color;
     case 'account-format':
-      return 'Račun se piše kao 160-602-16 ili kao 18 cifara.';
+      return m.accountFormat;
     case 'account-checksum':
-      return 'Kontrolni broj računa nije ispravan. Proverite cifre.';
+      return m.accountChecksum;
     case 'jmbg-format':
-      return 'JMBG ima 13 cifara.';
+      return m.jmbgFormat;
     case 'jmbg-checksum':
-      return 'Kontrolna cifra JMBG-a ne odgovara. Proverite broj.';
+      return m.jmbgChecksum;
     case 'pib-format':
-      return 'PIB ima 9 cifara.';
+      return m.pibFormat;
     case 'pib-checksum':
-      return 'Kontrolna cifra PIB-a ne odgovara. Proverite broj.';
+      return m.pibChecksum;
     case 'payer-too-long':
-      return 'Ime i adresa zajedno imaju više od 70 znakova i neće stati u IPS QR kod.';
+      return m.payerTooLong;
     case 'payment-code':
-      return 'Nepoznata šifra plaćanja.';
+      return m.paymentCode;
     case 'payment-code-not-qr':
-      return 'IPS QR kod prihvata samo šifre koje počinju sa 1 ili 2.';
+      return m.paymentCodeNotQr;
     case 'amount':
-      return 'Neispravan iznos.';
+      return m.amount;
     case 'month':
-      return 'Mesec u obliku GGGG-MM.';
+      return m.month;
     case 'date':
-      return 'Neispravan datum.';
+      return m.date;
     case 'end-before-start':
-      return 'Kraj je pre početka.';
+      return m.endBeforeStart;
     case 'no-dates':
-      return 'Dodajte bar jedan datum.';
+      return m.noDates;
     case 'reference':
-      return REFERENCE[issue.reason];
+      return m.reference[issue.reason];
     case 'template-syntax':
-      return 'Šablon nije ispravan: proverite vitičaste zagrade.';
+      return m.templateSyntax;
     case 'template-too-long':
-      return `Vrednost je duža od ${String(issue.width)} znakova.`;
+      return m.templateTooLong(issue.width);
     case 'profile-missing':
-      return `Platilac nema unet ${issue.field}.`;
+      return m.profileMissing(issue.field);
     case 'model97-has-control':
-      return 'Izgleda da poziv na broj već počinje kontrolnim brojem. Za model 97 on se dodaje sam: unesite poziv na broj bez prve dve cifre.';
+      return m.model97HasControl;
   }
 }
-
-const QR_FIELDS: Record<string, string> = {
-  R: 'račun primaoca',
-  N: 'naziv primaoca',
-  I: 'iznos',
-  P: 'platilac',
-  SF: 'šifra plaćanja',
-  S: 'svrha uplate',
-  RO: 'poziv na broj',
-};
-
-const QR_CODES: Record<string, string> = {
-  missing: 'nedostaje',
-  invalid: 'nije ispravno',
-  checksum: 'kontrolni broj nije ispravan',
-  length: 'predugačko',
-  lines: 'previše redova',
-  chars: 'nedozvoljeni znakovi',
-};
 
 export function qrIssueText(issue: IpsQrIssue): string {
-  if (issue.code === 'too-large') return 'Podaci ne staju u IPS QR kod.';
-  if (issue.tag === null) return 'Podaci nisu ispravni za IPS QR kod.';
-  const field = QR_FIELDS[issue.tag] ?? issue.tag;
-  return `${field.charAt(0).toUpperCase()}${field.slice(1)}: ${QR_CODES[issue.code] ?? 'nije ispravno'}.`;
+  const m = t.qrIssue;
+  if (issue.code === 'too-large') return m.tooLarge;
+  if (issue.tag === null) return m.general;
+  return m.field(
+    m.fields[issue.tag] ?? issue.tag,
+    m.codes[issue.code] ?? m.codes.invalid ?? '',
+  );
 }
 
-export const SLIP_WARNINGS: Record<SlipWarning, string> = {
-  'no-amount': 'Iznos još nije unet, pa uplatnica nema iznos ni QR kod.',
-  overflow:
-    'Tekst ne staje u tri reda od 35 znakova i odsečen je na uplatnici.',
-};
+export function slipWarningText(w: SlipWarning): string {
+  return w === 'no-amount' ? t.print.noAmount : t.print.overflow;
+}
 
 export function importIssueText(issue: ImportIssue): string {
+  const m = t.importIssue;
   switch (issue.code) {
     case 'not-json':
-      return 'Datoteka nije ispravan JSON.';
+      return m.notJson;
     case 'not-backup':
-      return 'Ovo nije rezervna kopija Uplatnice.';
+      return m.notBackup;
     case 'version':
-      return 'Datoteka nema ispravnu verziju šeme.';
+      return m.version;
     case 'newer':
-      return `Datoteku je napravila novija verzija aplikacije (šema ${String(issue.version)}). Osvežite stranicu i pokušajte ponovo.`;
+      return m.newer(issue.version);
     case 'invalid':
-      return `${issue.path || 'Datoteka'}: neispravna vrednost.`;
+      return m.invalid(issue.path || m.file);
     case 'unknown-keys':
-      return `${issue.path || 'Datoteka'}: nepoznata polja ${issue.keys.join(', ')}.`;
+      return m.unknownKeys(issue.path || m.file, issue.keys.join(', '));
     case 'duplicate':
-      return `${issue.path}: zapis se ponavlja.`;
+      return m.duplicate(issue.path);
     case 'missing-ref':
-      return `${issue.path}: upućuje na zapis kojeg nema u datoteci.`;
+      return m.missingRef(issue.path);
   }
 }
 
-const modelName = (m: string) => (m === '' ? 'bez modela' : `model ${m}`);
+const modelName = (m: string) =>
+  m === '' ? t.scanNote.noModel : t.scanNote.model(m);
 
 export function scanNoteText(note: ScanNote): string {
+  const m = t.scanNote;
   switch (note.code) {
     case 'account':
-      return `Račun primaoca na kodu je ${formatAccount(note.scanned)}, a u računu je ${formatAccount(note.current)}.`;
+      return m.account(
+        formatAccount(note.scanned),
+        formatAccount(note.current),
+      );
     case 'model':
-      return `Poziv na broj na kodu je ${modelName(note.scanned)}, a račun koristi ${modelName(note.current)}, pa nije preuzet.`;
+      return m.modelMismatch(modelName(note.scanned), modelName(note.current));
     case 'unsupported-model':
-      return `Poziv na broj na kodu je po modelu ${note.model}, koji aplikacija ne podržava, pa nije preuzet.`;
+      return m.unsupportedModel(note.model);
     case 'payment-code':
-      return `Šifra plaćanja na kodu je ${note.scanned}, a u računu ${note.current}. Uplatnica koristi šifru iz računa.`;
+      return m.paymentCode(note.scanned, note.current);
     case 'no-amount':
-      return 'Kod nema iznos, pa iznos nije preuzet.';
+      return m.noAmount;
     case 'payee-reference':
-      return `Umesto poziva na broj kod ima referencu primaoca ${note.value}, koja nije preuzeta.`;
+      return m.payeeReference(note.value);
   }
 }

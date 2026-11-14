@@ -17,19 +17,15 @@ import { useLive } from '../data';
 import { formatDate } from '../format';
 import { OccurrencePanel } from '../occurrence-panel/OccurrencePanel';
 import { OverviewHeader } from '../overview';
-import {
-  MONTHS_SHORT,
-  STATUS_ICONS,
-  STATUS_LABELS,
-  periodLabel,
-} from '../period-text';
+import { t } from '../../i18n';
+import { STATUS_ICONS, periodLabel, statusLabel } from '../period-text';
 import { href } from '../router';
 import { SetupNotice } from '../SetupNotice';
 
-const ZOOMS: readonly { value: Zoom; label: string; dayPx: number }[] = [
-  { value: '6m', label: '6 meseci', dayPx: 6 },
-  { value: '1y', label: '1 godina', dayPx: 3 },
-  { value: '3y', label: '3 godine', dayPx: 1.2 },
+const ZOOMS: readonly { value: Zoom; dayPx: number }[] = [
+  { value: '6m', dayPx: 6 },
+  { value: '1y', dayPx: 3 },
+  { value: '3y', dayPx: 1.2 },
 ];
 
 const MIN_AMOUNT_PX = 64;
@@ -46,11 +42,11 @@ function blockLabel(row: BillRow, block: Block): string {
   const parts = [
     row.bill.title,
     periodLabel(block.occ),
-    `rok ${formatDate(block.occ.dueDate)}`,
+    t.common.due(formatDate(block.occ.dueDate)),
   ];
   if (block.amount !== undefined)
     parts.push(`${formatAmount(block.amount)} RSD`);
-  parts.push(STATUS_LABELS[block.status]);
+  parts.push(statusLabel(block.status));
   return parts.join(', ');
 }
 
@@ -84,7 +80,7 @@ function Row(props: {
       <div class="tl-label">
         <a href={href({ name: 'bill', id: row.bill.id })}>{row.bill.title}</a>
         {total && (
-          <span class="tl-total" title="Ukupno sa rokom u prikazanom periodu">
+          <span class="tl-total" title={t.timeline.rowTotal}>
             {total}
           </span>
         )}
@@ -201,13 +197,14 @@ export function TimelineView() {
         <SetupNotice profiles={data.profiles} sections={data.sections} />
       ) : activeBills.length === 0 ? (
         <p class="empty">
-          Još nema računa. Dodajte ih na stranici{' '}
-          <a href={href({ name: 'bills' })}>Računi</a>.
+          {t.overview.noBills((text) => (
+            <a href={href({ name: 'bills' })}>{text}</a>
+          ))}
         </p>
       ) : (
         <>
           <div class="tl-controls">
-            <div class="segmented" role="group" aria-label="Razmera">
+            <div class="segmented" role="group" aria-label={t.timeline.scale}>
               {ZOOMS.map((z) => (
                 <button
                   key={z.value}
@@ -218,14 +215,14 @@ export function TimelineView() {
                     setShift(0);
                   }}
                 >
-                  {z.label}
+                  {t.timeline.zoom[z.value]}
                 </button>
               ))}
             </div>
-            <div class="segmented" role="group" aria-label="Pomeranje">
+            <div class="segmented" role="group" aria-label={t.timeline.shift}>
               <button
                 type="button"
-                aria-label="Ranije"
+                aria-label={t.timeline.earlier}
                 onClick={() => {
                   setShift(shift - 1);
                 }}
@@ -239,11 +236,11 @@ export function TimelineView() {
                   setShift(0);
                 }}
               >
-                Danas
+                {t.timeline.today}
               </button>
               <button
                 type="button"
-                aria-label="Kasnije"
+                aria-label={t.timeline.later}
                 onClick={() => {
                   setShift(shift + 1);
                 }}
@@ -252,14 +249,14 @@ export function TimelineView() {
               </button>
             </div>
             <label class="inline">
-              Odeljak{' '}
+              {t.common.section}{' '}
               <select
                 value={filter.sectionId ?? ''}
                 onChange={(e) => {
                   setFilterId('sectionId', e.currentTarget.value);
                 }}
               >
-                <option value="">svi</option>
+                <option value="">{t.common.all}</option>
                 {data.sections
                   .filter((s) => !s.archived)
                   .map((s) => (
@@ -271,14 +268,14 @@ export function TimelineView() {
             </label>
             {data.profiles.length > 1 && (
               <label class="inline">
-                Platilac{' '}
+                {t.common.payer}{' '}
                 <select
                   value={filter.profileId ?? ''}
                   onChange={(e) => {
                     setFilterId('profileId', e.currentTarget.value);
                   }}
                 >
-                  <option value="">svi</option>
+                  <option value="">{t.common.all}</option>
                   {data.profiles.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.name}
@@ -295,7 +292,7 @@ export function TimelineView() {
                   setFilter({ ...filter, unpaidOnly: e.currentTarget.checked });
                 }}
               />
-              Samo neplaćeno
+              {t.timeline.unpaidOnly}
             </label>
           </div>
 
@@ -329,15 +326,15 @@ export function TimelineView() {
                     }}
                   >
                     {zoom === '3y'
-                      ? (MONTHS_SHORT[m.month - 1] ?? '').charAt(0)
-                      : MONTHS_SHORT[m.month - 1]}
+                      ? (t.monthsShort[m.month - 1] ?? '').charAt(0)
+                      : t.monthsShort[m.month - 1]}
                   </div>
                 ))}
                 <Today offset={todayAt} />
               </div>
 
               {groups.length === 0 && (
-                <p class="empty tl-empty">Nijedan račun ne odgovara filteru.</p>
+                <p class="empty tl-empty">{t.timeline.noMatch}</p>
               )}
               {groups.map(({ section, rows }) => {
                 const isCollapsed = collapsed.has(section.id);
@@ -387,7 +384,7 @@ export function TimelineView() {
             </div>
           </div>
 
-          <ul class="tl-legend" aria-label="Legenda">
+          <ul class="tl-legend" aria-label={t.timeline.legend}>
             {(
               [
                 'paid',
@@ -402,7 +399,7 @@ export function TimelineView() {
                 <span class={`tl-block st-${s}`} aria-hidden="true">
                   {STATUS_ICONS[s]}
                 </span>
-                {STATUS_LABELS[s]}
+                {statusLabel(s)}
               </li>
             ))}
           </ul>

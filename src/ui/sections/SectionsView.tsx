@@ -6,6 +6,7 @@ import {
 } from '../../core/forms/section';
 import type { Section } from '../../core/model';
 import { IntegrityError, newId } from '../../db/repo';
+import { t } from '../../i18n';
 import { useLive, useRepo } from '../data';
 import { CheckField, Field, TextField, hasErrors, useFeedback } from '../form';
 
@@ -30,7 +31,7 @@ function SectionForm(props: {
   return (
     <form
       class="card form"
-      aria-label={props.section ? 'Izmena odeljka' : 'Novi odeljak'}
+      aria-label={props.section ? t.sections.editForm : t.sections.add}
       noValidate
       onSubmit={(e) => {
         e.preventDefault();
@@ -42,14 +43,19 @@ function SectionForm(props: {
       <TextField
         id="section-name"
         name="name"
-        label="Naziv"
+        label={t.common.name}
         feedback={fb}
         value={draft.name}
         onInput={(name) => {
           set({ name });
         }}
       />
-      <Field id="section-color" name="color" label="Boja" feedback={fb}>
+      <Field
+        id="section-color"
+        name="color"
+        label={t.sections.color}
+        feedback={fb}
+      >
         {(aria) => (
           <input
             type="color"
@@ -63,7 +69,7 @@ function SectionForm(props: {
       </Field>
       {props.section && (
         <CheckField
-          label="Arhiviran (skriven sa dijagrama)"
+          label={t.common.archivedHidden}
           checked={draft.archived}
           onChange={(archived) => {
             set({ archived });
@@ -72,10 +78,10 @@ function SectionForm(props: {
       )}
       <div class="actions">
         <button type="submit" class="primary">
-          Sačuvaj
+          {t.common.save}
         </button>
         <button type="button" onClick={props.onDone}>
-          Otkaži
+          {t.common.cancel}
         </button>
       </div>
     </form>
@@ -98,22 +104,20 @@ export function SectionsView() {
   };
 
   const remove = async (s: Section) => {
-    if (!confirm(`Obrisati odeljak „${s.name}“?`)) return;
+    if (!confirm(t.sections.confirmDelete(s.name))) return;
     try {
       await repo.deleteSection(s.id);
       setMessage('');
     } catch (e) {
       if (!(e instanceof IntegrityError)) throw e;
-      setMessage(
-        `U odeljku „${s.name}“ ima računa. Premestite ih ili obrišite, ili arhivirajte odeljak.`,
-      );
+      setMessage(t.sections.inUse(s.name));
     }
   };
 
   return (
     <section>
       <div class="toolbar">
-        <h1>Odeljci</h1>
+        <h1>{t.sections.title}</h1>
         <button
           type="button"
           class="primary"
@@ -122,13 +126,10 @@ export function SectionsView() {
             setEditing('new');
           }}
         >
-          Novi odeljak
+          {t.sections.add}
         </button>
       </div>
-      <p class="lead">
-        Odeljci grupišu račune na dijagramu, na primer „Stan“, „Porezi“ ili
-        „Paušal“.
-      </p>
+      <p class="lead">{t.sections.lead}</p>
       {message && (
         <p class="error" role="alert">
           {message}
@@ -143,7 +144,7 @@ export function SectionsView() {
         />
       )}
       {sections.length === 0 && editing === null && (
-        <p class="empty">Još nema odeljaka.</p>
+        <p class="empty">{t.sections.empty}</p>
       )}
       <ul class="cards">
         {sections.map((s, i) =>
@@ -162,12 +163,12 @@ export function SectionsView() {
               <span class="swatch" style={{ background: s.color }} />
               <div class="card-main">
                 <strong>{s.name}</strong>
-                {s.archived && <div class="muted">Arhiviran</div>}
+                {s.archived && <div class="muted">{t.common.archived}</div>}
               </div>
               <div class="actions">
                 <button
                   type="button"
-                  aria-label={`Pomeri „${s.name}“ gore`}
+                  aria-label={t.sections.up(s.name)}
                   disabled={i === 0}
                   onClick={() => void swap(i, i - 1)}
                 >
@@ -175,7 +176,7 @@ export function SectionsView() {
                 </button>
                 <button
                   type="button"
-                  aria-label={`Pomeri „${s.name}“ dole`}
+                  aria-label={t.sections.down(s.name)}
                   disabled={i === sections.length - 1}
                   onClick={() => void swap(i, i + 1)}
                 >
@@ -188,14 +189,14 @@ export function SectionsView() {
                     setEditing(s.id);
                   }}
                 >
-                  Izmeni
+                  {t.common.edit}
                 </button>
                 <button
                   type="button"
                   class="danger"
                   onClick={() => void remove(s)}
                 >
-                  Obriši
+                  {t.common.delete}
                 </button>
               </div>
             </li>

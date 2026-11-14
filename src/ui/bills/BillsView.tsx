@@ -3,6 +3,7 @@ import type { Bill } from '../../core/model';
 import { formatAmount } from '../../core/money';
 import { upcomingPeriods } from '../../core/schedule';
 import { formatAccountShort } from '../../core/serbia/account';
+import { t } from '../../i18n';
 import { useLive } from '../data';
 import { SetupNotice } from '../SetupNotice';
 import { formatDate } from '../format';
@@ -22,13 +23,13 @@ function BillRow({ bill, today }: { bill: Bill; today: string }) {
           {scheduleText(bill.schedule)}
           {next &&
             next.dueDate >= today &&
-            ` · sledeći rok ${formatDate(next.dueDate)}`}
+            ` · ${t.bills.nextDue(formatDate(next.dueDate))}`}
         </div>
       </a>
       <div class="amount">
         {bill.amount !== undefined
           ? `${formatAmount(bill.amount)} RSD`
-          : 'iznos po računu'}
+          : t.bills.variable}
       </div>
     </li>
   );
@@ -48,15 +49,15 @@ export function BillsView() {
   return (
     <section>
       <div class="toolbar">
-        <h1>Računi</h1>
+        <h1>{t.bills.title}</h1>
         {ready && (
           <a class="button primary" href={href({ name: 'bill', id: null })}>
-            Novi račun
+            {t.common.newBill}
           </a>
         )}
       </div>
       {!ready && <SetupNotice profiles={profiles} sections={sections} />}
-      {ready && bills.length === 0 && <p class="empty">Još nema računa.</p>}
+      {ready && bills.length === 0 && <p class="empty">{t.bills.empty}</p>}
       {sections.map((s) => {
         const own = bills
           .filter((b) => b.sectionId === s.id)

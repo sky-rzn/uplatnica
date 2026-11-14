@@ -1,28 +1,24 @@
 import type { DueRule, EveryMonths, Schedule } from '../core/model';
+import { t } from '../i18n';
 
-export const EVERY_LABELS: Record<EveryMonths, string> = {
-  1: 'mesečno',
-  2: 'na 2 meseca',
-  3: 'tromesečno',
-  4: 'na 4 meseca',
-  6: 'polugodišnje',
-  12: 'godišnje',
-};
+export function everyLabel(m: EveryMonths): string {
+  return t.schedule.every[m];
+}
 
 function dueText(due: DueRule): string {
-  if ('daysFromStart' in due)
-    return `${String(due.daysFromStart + 1)}. dan perioda`;
-  const day = due.day === 'last' ? 'poslednji dan' : `${String(due.day)}.`;
+  const s = t.schedule;
+  if ('daysFromStart' in due) return s.daysFromStart(due.daysFromStart + 1);
+  const day = due.day === 'last' ? s.lastDay : s.day(due.day);
   const offset = due.monthOffset ?? 0;
-  if (offset === 0) return `${day} u mesecu`;
-  if (offset === 1) return `${day} narednog meseca`;
-  return `${day} posle ${String(offset)} meseca`;
+  if (offset === 0) return s.sameMonth(day);
+  if (offset === 1) return s.nextMonth(day);
+  return s.laterMonth(day, offset);
 }
 
 export function scheduleText(s: Schedule): string {
-  if (s.kind === 'dates') {
-    const n = s.dates.length;
-    return n === 1 ? 'jednom' : `${String(n)} datuma`;
-  }
-  return `${EVERY_LABELS[s.everyMonths]}, rok ${dueText(s.due)}`;
+  if (s.kind === 'dates')
+    return s.dates.length === 1
+      ? t.schedule.once
+      : t.schedule.dates(s.dates.length);
+  return t.schedule.periodic(everyLabel(s.everyMonths), dueText(s.due));
 }

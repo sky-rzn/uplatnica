@@ -1,5 +1,6 @@
 import type { ScanNote } from '../../core/forms/scan';
 import { parseIpsQr, type ParsedIpsQr } from '../../core/serbia/ipsQr';
+import { t } from '../../i18n';
 import { qrIssueText, scanNoteText } from '../messages';
 
 export type ScanRead =
@@ -9,10 +10,10 @@ export function readScan(text: string): ScanRead {
   const r = parseIpsQr(text);
   if (r.ok) return { ok: true, qr: r.value };
   if (!/(^|\|)\s*K\s*:/i.test(text))
-    return { ok: false, messages: ['Ovo nije IPS QR kod za plaćanje.'] };
+    return { ok: false, messages: [t.scan.notIps] };
   return {
     ok: false,
-    messages: ['QR kod nije ispravan.', ...r.issues.map(qrIssueText)],
+    messages: [t.scan.invalid, ...r.issues.map(qrIssueText)],
   };
 }
 

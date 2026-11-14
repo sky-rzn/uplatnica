@@ -1,4 +1,5 @@
 import type { Profile, Section } from '../core/model';
+import { t } from '../i18n';
 import { href } from './router';
 
 export function SetupNotice(props: {
@@ -7,17 +8,20 @@ export function SetupNotice(props: {
 }) {
   return (
     <div class="card notice">
-      <p>Pre prvog računa potrebni su:</p>
+      <p>{t.setup.lead}</p>
       <ul>
         {props.profiles.length === 0 && (
           <li>
-            <a href={href({ name: 'profiles' })}>platilac</a> - ko plaća;
+            {t.setup.payer((text) => (
+              <a href={href({ name: 'profiles' })}>{text}</a>
+            ))}
           </li>
         )}
         {props.sections.length === 0 && (
           <li>
-            <a href={href({ name: 'sections' })}>odeljak</a> - grupa računa, na
-            primer „Stan“.
+            {t.setup.section((text) => (
+              <a href={href({ name: 'sections' })}>{text}</a>
+            ))}
           </li>
         )}
       </ul>

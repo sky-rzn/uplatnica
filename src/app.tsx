@@ -1,26 +1,29 @@
 import type { Repo } from './db/repo';
 import { todayIso } from './core/date';
+import { locale, t } from './i18n';
 import { BACKUP_REMIND_DAYS, backupAge, useLastBackup } from './ui/backup-mark';
 import { DataView } from './ui/backup/DataView';
 import { BillEditor } from './ui/bill-editor/BillEditor';
 import { BillsView } from './ui/bills/BillsView';
 import { ListView } from './ui/list/ListView';
 import { RepoContext, useLive } from './ui/data';
+import { usePreferencesVersion } from './ui/preferences';
 import { ProfilesView } from './ui/profiles/ProfilesView';
 import { href, useRoute, type Route } from './ui/router';
 import { SectionsView } from './ui/sections/SectionsView';
+import { SettingsView } from './ui/settings/SettingsView';
 import { TimelineView } from './ui/timeline/TimelineView';
 import { ScanView } from './ui/scanner/ScanView';
 import { PrintView } from './ui/uplatnica/PrintView';
-import { plural } from './ui/period-text';
 
-const NAV: readonly { route: Route; label: string }[] = [
-  { route: { name: 'timeline' }, label: 'Pregled' },
-  { route: { name: 'bills' }, label: 'Računi' },
-  { route: { name: 'sections' }, label: 'Odeljci' },
-  { route: { name: 'profiles' }, label: 'Platioci' },
-  { route: { name: 'data' }, label: 'Podaci' },
-];
+const NAV = [
+  'timeline',
+  'bills',
+  'sections',
+  'profiles',
+  'data',
+  'settings',
+] as const;
 
 function Page({ route }: { route: Route }) {
   switch (route.name) {
@@ -45,6 +48,8 @@ function Page({ route }: { route: Route }) {
       return <PrintView items={route.items} />;
     case 'data':
       return <DataView />;
+    case 'settings':
+      return <SettingsView />;
     case 'scan':
       return <ScanView />;
   }
@@ -58,15 +63,13 @@ function BackupReminder() {
     <>
       {' '}
       <a href={href({ name: 'data' })}>
-        {age === null
-          ? 'Napravite rezervnu kopiju.'
-          : `Poslednja rezervna kopija je od pre ${String(age)} ${plural(age, 'dan', 'dana')}.`}
+        {age === null ? t.app.backupNever : t.app.backupAge(age)}
       </a>
     </>
   );
 }
 
-export function App({ repo }: { repo: Repo }) {
+function Shell() {
   const route = useRoute();
   const current =
     route.name === 'bill'
@@ -75,19 +78,19 @@ export function App({ repo }: { repo: Repo }) {
         ? 'timeline'
         : route.name;
   return (
-    <RepoContext.Provider value={repo}>
+    <>
       <header class="top">
         <a class="brand" href={href({ name: 'timeline' })}>
-          Uplatnica
+          {t.app.brand}
         </a>
-        <nav aria-label="Glavni meni">
-          {NAV.map(({ route: r, label }) => (
+        <nav aria-label={t.app.mainMenu}>
+          {NAV.map((name) => (
             <a
-              key={r.name}
-              href={href(r)}
-              {...(r.name === current ? { 'aria-current': 'page' } : {})}
+              key={name}
+              href={href({ name })}
+              {...(name === current ? { 'aria-current': 'page' } : {})}
             >
-              {label}
+              {t.app.nav[name]}
             </a>
           ))}
         </nav>
@@ -96,9 +99,18 @@ export function App({ repo }: { repo: Repo }) {
         <Page route={route} />
       </main>
       <footer>
-        Svi podaci ostaju u ovom pregledaču.
+        {t.app.privacy}
         <BackupReminder />
       </footer>
+    </>
+  );
+}
+
+export function App({ repo }: { repo: Repo }) {
+  usePreferencesVersion();
+  return (
+    <RepoContext.Provider value={repo}>
+      <Shell key={locale()} />
     </RepoContext.Provider>
   );
 }

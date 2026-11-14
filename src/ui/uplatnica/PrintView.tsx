@@ -9,7 +9,8 @@ import {
 import { buildSlip, slipInput, type Slip } from '../../core/uplatnica/slip';
 import { useLive } from '../data';
 import { download, fileSlug } from '../download';
-import { SLIP_WARNINGS, qrIssueText } from '../messages';
+import { t } from '../../i18n';
+import { qrIssueText, slipWarningText } from '../messages';
 import { periodLabel } from '../period-text';
 import type { PeriodRef } from '../router';
 import { SlipSvg } from './SlipSvg';
@@ -24,12 +25,9 @@ interface PrintedSlip {
 function Problems({ item }: { item: PrintedSlip }) {
   const { slip } = item;
   const texts = [
-    ...slip.warnings.map((w) => SLIP_WARNINGS[w]),
+    ...slip.warnings.map(slipWarningText),
     ...(slip.qr && !slip.qr.ok
-      ? [
-          'Uplatnica je bez QR koda:',
-          ...slip.qr.issues.map((i) => qrIssueText(i)),
-        ]
+      ? [t.print.noQr, ...slip.qr.issues.map((i) => qrIssueText(i))]
       : []),
   ];
   if (texts.length === 0) return null;
@@ -102,7 +100,7 @@ export function PrintView({ items }: { items: readonly PeriodRef[] }) {
     <section class="print-view">
       <div class="no-print">
         <div class="toolbar">
-          <h1>{slips.length === 1 ? 'Uplatnica' : 'Uplatnice'}</h1>
+          <h1>{slips.length === 1 ? t.print.one : t.print.many}</h1>
           <div class="actions">
             <button
               type="button"
@@ -110,7 +108,7 @@ export function PrintView({ items }: { items: readonly PeriodRef[] }) {
                 history.back();
               }}
             >
-              Nazad
+              {t.common.back}
             </button>
             <button
               type="button"
@@ -119,7 +117,7 @@ export function PrintView({ items }: { items: readonly PeriodRef[] }) {
                 void pdf();
               }}
             >
-              Preuzmi PDF
+              {t.print.pdf}
             </button>
             <button
               type="button"
@@ -129,28 +127,19 @@ export function PrintView({ items }: { items: readonly PeriodRef[] }) {
                 print();
               }}
             >
-              Štampaj
+              {t.print.print}
             </button>
           </div>
         </div>
-        <p class="hint">
-          Štampajte na A4 bez uklapanja u stranu, u razmeri 100 %, da bi
-          uplatnica imala pravu veličinu. Na jedan list staju tri.
-        </p>
+        <p class="hint">{t.print.hint}</p>
         {pdfState === 'error' && (
           <p class="error" role="alert">
-            PDF nije napravljen. Pokušajte ponovo.
+            {t.print.pdfFailed}
           </p>
         )}
-        {missing > 0 && (
-          <p class="error">
-            {missing === 1
-              ? 'Jedan račun ili period više ne postoji.'
-              : `${String(missing)} računa ili perioda više ne postoje.`}
-          </p>
-        )}
+        {missing > 0 && <p class="error">{t.print.missing(missing)}</p>}
         {slips.length === 0 && missing === 0 && (
-          <p class="empty">Nije izabrana nijedna uplatnica.</p>
+          <p class="empty">{t.print.none}</p>
         )}
         <ul class="notice-list">
           {slips.map((s) => (

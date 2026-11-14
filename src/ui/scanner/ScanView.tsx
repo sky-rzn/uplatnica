@@ -5,6 +5,7 @@ import { periodReference } from '../../core/forms/occurrence';
 import { matchScan } from '../../core/forms/scan';
 import type { Profile } from '../../core/model';
 import type { ParsedIpsQr } from '../../core/serbia/ipsQr';
+import { t } from '../../i18n';
 import { useLive } from '../data';
 import { formatDate } from '../format';
 import { OccurrencePanel } from '../occurrence-panel/OccurrencePanel';
@@ -61,11 +62,8 @@ export function ScanView() {
   if (!read?.ok)
     return (
       <section class="scan-view">
-        <h1>Skeniranje računa</h1>
-        <p class="hint">
-          Skenirajte IPS QR kod sa računa. Iznos i poziv na broj upisuju se u
-          period računa, a za novog primaoca pravi se novi račun.
-        </p>
+        <h1>{t.common.scanning}</h1>
+        <p class="hint">{t.scan.lead}</p>
         <Scanner onScan={setText} />
         {read && <ScanFailure messages={read.messages} />}
       </section>
@@ -96,7 +94,7 @@ export function ScanView() {
 
   return (
     <section class="scan-view">
-      <h1>Skeniranje računa</h1>
+      <h1>{t.common.scanning}</h1>
       <div class="card scan-found">
         <QrFields qr={qr} />
         <button
@@ -105,7 +103,7 @@ export function ScanView() {
             setText(undefined);
           }}
         >
-          Skeniraj drugi kod
+          {t.scan.again}
         </button>
       </div>
 
@@ -113,7 +111,7 @@ export function ScanView() {
         <SetupNotice profiles={data.profiles} sections={data.sections} />
       ) : (
         <>
-          {matches.length === 0 && <p>Nijedan račun nema ovog primaoca.</p>}
+          {matches.length === 0 && <p>{t.scan.noMatch}</p>}
           {matches.map(({ bill, by, items, pick }) => (
             <section
               key={bill.id}
@@ -121,14 +119,12 @@ export function ScanView() {
               aria-labelledby={`scan-${bill.id}`}
             >
               <h2 id={`scan-${bill.id}`}>{bill.title}</h2>
-              {by === 'name' && (
-                <p class="warning">Isti primalac, ali drugi račun primaoca.</p>
-              )}
+              {by === 'name' && <p class="warning">{t.scan.otherAccount}</p>}
               {items.length === 0 ? (
-                <p class="muted">Nema neplaćenih perioda.</p>
+                <p class="muted">{t.scan.noPeriods}</p>
               ) : (
                 <>
-                  <p class="hint">Izaberite period za koji je račun:</p>
+                  <p class="hint">{t.scan.pickPeriod}</p>
                   <ul class="scan-periods">
                     {items.map((item) => {
                       const isPick = pick?.item === item;
@@ -144,10 +140,10 @@ export function ScanView() {
                               });
                             }}
                           >
-                            {periodLabel(item.occ)}, rok{' '}
-                            {formatDate(item.occ.dueDate)}
+                            {periodLabel(item.occ)},{' '}
+                            {t.common.due(formatDate(item.occ.dueDate))}
                             {isPick && pick.byReference
-                              ? ' (isti poziv na broj)'
+                              ? t.scan.sameReference
                               : ''}
                           </button>
                         </li>
@@ -163,7 +159,7 @@ export function ScanView() {
               class={matches.length === 0 ? 'button primary' : 'button'}
               href={href({ name: 'bill', id: null, qr: text ?? '' })}
             >
-              Novi račun iz ovog koda
+              {t.scan.newBill}
             </a>
           </p>
         </>

@@ -13,19 +13,20 @@ import { useLive } from '../data';
 import { formatDate } from '../format';
 import { OccurrencePanel } from '../occurrence-panel/OccurrencePanel';
 import { OverviewHeader, totalText } from '../overview';
+import { t } from '../../i18n';
 import {
   STATUS_ICONS,
-  STATUS_LABELS,
   dueInText,
   periodLabel,
+  statusLabel,
 } from '../period-text';
 import { href, navigate, type PeriodRef } from '../router';
 import { SetupNotice } from '../SetupNotice';
 
-const GROUPS: readonly { key: AgendaGroup; title: string; cls: string }[] = [
-  { key: 'overdue', title: 'Kasni', cls: 'st-overdue' },
-  { key: 'now', title: 'Za plaćanje', cls: 'st-due' },
-  { key: 'soon', title: 'Uskoro', cls: 'st-upcoming' },
+const GROUPS: readonly { key: AgendaGroup; cls: string }[] = [
+  { key: 'overdue', cls: 'st-overdue' },
+  { key: 'now', cls: 'st-due' },
+  { key: 'soon', cls: 'st-upcoming' },
 ];
 
 function itemKey(item: AgendaItem): string {
@@ -46,7 +47,7 @@ function Item(props: {
       <input
         type="checkbox"
         class="pick"
-        aria-label={`Izaberi za štampu: ${bill.title}, ${periodLabel(occ)}`}
+        aria-label={t.list.pick(`${bill.title}, ${periodLabel(occ)}`)}
         checked={props.picked}
         onChange={(e) => {
           props.onPick(e.currentTarget.checked);
@@ -58,7 +59,8 @@ function Item(props: {
           <strong>{bill.title}</strong>
           <span class="muted">{periodLabel(occ)}</span>
           <span class="muted">
-            rok {formatDate(occ.dueDate)}, {dueInText(occ.dueDate, today)}
+            {t.common.due(formatDate(occ.dueDate))},{' '}
+            {dueInText(occ.dueDate, today)}
           </span>
         </span>
         <span class="amount">
@@ -66,7 +68,7 @@ function Item(props: {
             `${formatAmount(item.remaining)} RSD`}
           <small>
             <span aria-hidden="true">{STATUS_ICONS[status]} </span>
-            {STATUS_LABELS[status]}
+            {statusLabel(status)}
           </small>
         </span>
       </button>
@@ -114,14 +116,12 @@ export function ListView() {
         <SetupNotice profiles={data.profiles} sections={data.sections} />
       ) : !hasBills ? (
         <p class="empty">
-          Još nema računa. Dodajte ih na stranici{' '}
-          <a href={href({ name: 'bills' })}>Računi</a>.
+          {t.overview.noBills((text) => (
+            <a href={href({ name: 'bills' })}>{text}</a>
+          ))}
         </p>
       ) : items.length === 0 ? (
-        <p class="empty">
-          Nema neplaćenih računa sa rokom u narednih {String(AGENDA_AHEAD_DAYS)}{' '}
-          dana.
-        </p>
+        <p class="empty">{t.list.nothingAhead(AGENDA_AHEAD_DAYS)}</p>
       ) : (
         <div class="print-bar">
           <label>
@@ -134,7 +134,7 @@ export function ListView() {
                 );
               }}
             />{' '}
-            Izaberi sve
+            {t.list.pickAll}
           </label>
           <button
             type="button"
@@ -149,14 +149,14 @@ export function ListView() {
               });
             }}
           >
-            Štampaj uplatnice
+            {t.list.print}
             {pickedItems.length > 0 && ` (${String(pickedItems.length)})`}
           </button>
         </div>
       )}
       {ready &&
         hasBills &&
-        GROUPS.map(({ key, title, cls }) => {
+        GROUPS.map(({ key, cls }) => {
           const own = items.filter((i) => agendaGroup(i.status) === key);
           if (own.length === 0) return null;
           return (
@@ -166,7 +166,8 @@ export function ListView() {
               aria-labelledby={`agenda-${key}`}
             >
               <h2 id={`agenda-${key}`}>
-                {title} <span class="muted">{totalText(totals[key])}</span>
+                {t.list.groups[key]}{' '}
+                <span class="muted">{totalText(totals[key])}</span>
               </h2>
               <ul class="cards">
                 {own.map((item) => (

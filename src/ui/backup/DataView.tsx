@@ -15,7 +15,7 @@ import { useLive, useRepo } from '../data';
 import { download, fileSlug } from '../download';
 import { formatDate } from '../format';
 import { importIssueText } from '../messages';
-import { plural } from '../period-text';
+import { t } from '../../i18n';
 
 const SHOWN_ISSUES = 20;
 
@@ -27,22 +27,12 @@ function saveJson(backup: Backup, name: string): void {
   download(backupJson(backup), 'application/json', name);
 }
 
-function count(n: number, one: string, few: string): string {
-  return `${String(n)} ${plural(n, one, few)}`;
-}
-
 function BackupStatus() {
   const at = useLastBackup();
   const today = todayIso();
   const age = backupAge(at, today);
-  if (at === null || age === null)
-    return <p>Rezervna kopija još nije napravljena.</p>;
-  const when = age === 0 ? 'danas' : `pre ${count(age, 'dan', 'dana')}`;
-  return (
-    <p>
-      Poslednja rezervna kopija: {formatDate(todayIso(new Date(at)))} ({when}).
-    </p>
-  );
+  if (at === null || age === null) return <p>{t.data.noBackup}</p>;
+  return <p>{t.data.lastBackup(formatDate(todayIso(new Date(at))), age)}</p>;
 }
 
 function ImportCard() {
@@ -60,39 +50,31 @@ function ImportCard() {
   const merge = async (backup: Backup) => {
     const s = await repo.merge(backup);
     setLoaded(null);
-    setMessage(
-      `Uvezeno. Novih zapisa: ${String(s.added)}, izmenjenih: ${String(s.updated)}, ` +
-        `zadržanih jer su ovde isti ili noviji: ${String(s.kept)}.`,
-    );
+    setMessage(t.data.merged(s.added, s.updated, s.kept));
   };
 
   const replace = async (backup: Backup) => {
-    if (
-      !confirm(
-        'Zameniti sve podatke sadržajem datoteke? Pre zamene preuzima se rezervna kopija trenutnih podataka.',
-      )
-    )
-      return;
+    if (!confirm(t.data.confirmReplace)) return;
     const current = await repo.dump();
     if (!isEmpty(current)) {
       const now = new Date();
       saveJson(
         fullBackup(current, now),
-        `uplatnica-pre-uvoza-${todayIso(now)}.json`,
+        `${t.data.file.beforeImport}-${todayIso(now)}.json`,
       );
       markBackup(now);
     }
     await repo.replaceAll(backup);
     setLoaded(null);
-    setMessage('Podaci su zamenjeni sadržajem datoteke.');
+    setMessage(t.data.replaced);
   };
 
   const issues = loaded && !loaded.ok ? loaded.issues : [];
   return (
     <section class="card" aria-labelledby="import-title">
-      <h2 id="import-title">Uvoz</h2>
+      <h2 id="import-title">{t.data.import}</h2>
       <label class="field">
-        Rezervna kopija (JSON)
+        {t.data.importFile}
         <input
           type="file"
           accept=".json,application/json"
@@ -105,13 +87,13 @@ function ImportCard() {
       </label>
       {loaded?.ok === false && (
         <div role="alert">
-          <p class="error">Datoteku „{loaded.name}“ nije moguće uvesti:</p>
+          <p class="error">{t.data.cannotImport(loaded.name)}</p>
           <ul class="error">
             {issues.slice(0, SHOWN_ISSUES).map((issue, i) => (
               <li key={i}>{importIssueText(issue)}</li>
             ))}
             {issues.length > SHOWN_ISSUES && (
-              <li>i još {String(issues.length - SHOWN_ISSUES)}.</li>
+              <li>{t.data.more(issues.length - SHOWN_ISSUES)}</li>
             )}
           </ul>
         </div>
@@ -119,18 +101,20 @@ function ImportCard() {
       {loaded?.ok && (
         <>
           <p>
-            „{loaded.name}“ od{' '}
-            {formatDate(todayIso(new Date(loaded.backup.exportedAt)))}:{' '}
-            {count(loaded.backup.profiles.length, 'platilac', 'platilaca')},{' '}
-            {count(loaded.backup.sections.length, 'odeljak', 'odeljaka')},{' '}
-            {count(loaded.backup.bills.length, 'račun', 'računa')},{' '}
-            {count(loaded.backup.occurrences.length, 'period', 'perioda')}.
+            {t.data.contents(
+              loaded.name,
+              formatDate(todayIso(new Date(loaded.backup.exportedAt))),
+              {
+                profiles: loaded.backup.profiles.length,
+                sections: loaded.backup.sections.length,
+                bills: loaded.backup.bills.length,
+                periods: loaded.backup.occurrences.length,
+              },
+            )}
           </p>
           <p class="hint">
-            Spajanje dodaje nove zapise, a postojeće menja samo ako su u
-            datoteci kasnije izmenjeni. Ništa se ne briše.
-            {loaded.backup.partial &&
-              ' Datoteka sadrži samo deo podataka, pa njome ne možete zameniti sve.'}
+            {t.data.mergeHint}
+            {loaded.backup.partial && t.data.partialHint}
           </p>
           <div class="actions">
             <button
@@ -138,7 +122,7 @@ function ImportCard() {
               class="primary"
               onClick={() => void merge(loaded.backup)}
             >
-              Spoji
+              {t.data.merge}
             </button>
             <button
               type="button"
@@ -146,7 +130,7 @@ function ImportCard() {
               disabled={loaded.backup.partial}
               onClick={() => void replace(loaded.backup)}
             >
-              Zameni sve
+              {t.data.replace}
             </button>
           </div>
         </>
@@ -185,7 +169,7 @@ export function DataView() {
     download(
       paymentsCsv(await repo.dump()),
       'text/csv;charset=utf-8',
-      `uplatnica-placanja-${todayIso()}.csv`,
+      `${t.data.file.payments}-${todayIso()}.csv`,
     );
   };
 
@@ -194,20 +178,17 @@ export function DataView() {
     download(
       dueDatesIcs(await repo.dump(), todayIso(now), now),
       'text/calendar;charset=utf-8',
-      `uplatnica-rokovi-${todayIso(now)}.ics`,
+      `${t.data.file.dues}-${todayIso(now)}.ics`,
     );
   };
 
   return (
     <section class="data-view">
-      <h1>Podaci</h1>
-      <p class="lead">
-        Podaci se čuvaju samo u ovom pregledaču. Rezervna kopija je datoteka
-        koju možete uvesti ovde ili u pregledaču na drugom uređaju.
-      </p>
+      <h1>{t.data.title}</h1>
+      <p class="lead">{t.data.lead}</p>
 
       <section class="card" aria-labelledby="backup-title">
-        <h2 id="backup-title">Rezervna kopija</h2>
+        <h2 id="backup-title">{t.data.backup}</h2>
         <BackupStatus />
         <div class="actions">
           <button
@@ -215,21 +196,18 @@ export function DataView() {
             class="primary"
             onClick={() => void exportAll()}
           >
-            Izvezi sve (JSON)
+            {t.data.exportAll}
           </button>
         </div>
       </section>
 
       {picked && (
         <section class="card" aria-labelledby="section-export-title">
-          <h2 id="section-export-title">Odeljak kao šablon</h2>
-          <p class="hint">
-            Računi iz odeljka i njihovi platioci, bez istorije plaćanja i bez
-            JMBG i PIB, da biste ih podelili sa nekim.
-          </p>
+          <h2 id="section-export-title">{t.data.sectionTemplate}</h2>
+          <p class="hint">{t.data.sectionTemplateHint}</p>
           <div class="actions">
             <select
-              aria-label="Odeljak"
+              aria-label={t.common.section}
               value={picked.id}
               onChange={(e) => {
                 setSectionId(e.currentTarget.value);
@@ -242,7 +220,7 @@ export function DataView() {
               ))}
             </select>
             <button type="button" onClick={() => void exportSection()}>
-              Izvezi odeljak
+              {t.data.exportSection}
             </button>
           </div>
         </section>
@@ -251,17 +229,14 @@ export function DataView() {
       <ImportCard />
 
       <section class="card" aria-labelledby="other-title">
-        <h2 id="other-title">Za druge programe</h2>
-        <p class="hint">
-          Istorija plaćanja otvara se u Excelu. Rokovi neplaćenih perioda za
-          narednu godinu uvoze se u kalendar telefona, koji podseća dan ranije.
-        </p>
+        <h2 id="other-title">{t.data.other}</h2>
+        <p class="hint">{t.data.otherHint}</p>
         <div class="actions">
           <button type="button" onClick={() => void exportCsv()}>
-            Istorija plaćanja (CSV)
+            {t.data.csv}
           </button>
           <button type="button" onClick={() => void exportIcs()}>
-            Rokovi za kalendar (ICS)
+            {t.data.ics}
           </button>
         </div>
       </section>

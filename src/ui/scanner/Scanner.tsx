@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
+import { t } from '../../i18n';
 import { isPdf, scanCanvas, scanFile } from './decode';
 
 const FRAME_MS = 250;
@@ -6,10 +7,10 @@ const FRAME_MS = 250;
 function cameraError(e: unknown): string {
   const name = e instanceof DOMException ? e.name : '';
   if (name === 'NotAllowedError' || name === 'SecurityError')
-    return 'Pristup kameri nije dozvoljen. Dozvolite ga u podešavanjima pregledača ili učitajte sliku računa.';
+    return t.scanner.cameraDenied;
   if (name === 'NotFoundError' || name === 'OverconstrainedError')
-    return 'Kamera nije pronađena. Učitajte sliku računa.';
-  return 'Kamera nije mogla da se pokrene. Učitajte sliku računa.';
+    return t.scanner.cameraMissing;
+  return t.scanner.cameraFailed;
 }
 
 function Camera(props: {
@@ -76,8 +77,8 @@ function Camera(props: {
 
   return (
     <div class="camera">
-      <video ref={video} muted playsInline aria-label="Slika sa kamere" />
-      <p class="hint">Usmerite kameru na QR kod na računu.</p>
+      <video ref={video} muted playsInline aria-label={t.scanner.video} />
+      <p class="hint">{t.scanner.aim}</p>
     </div>
   );
 }
@@ -104,14 +105,9 @@ export function Scanner(props: { onScan: (text: string) => void }) {
     try {
       const text = await scanFile(file);
       if (text !== null) found(text);
-      else
-        setError(
-          isPdf(file)
-            ? 'U PDF-u nije pronađen QR kod. Ako je kod nacrtan, a ne umetnut kao slika, napravite snimak ekrana i učitajte njega.'
-            : 'Na slici nije pronađen QR kod. Probajte oštriju sliku na kojoj kod zauzima više mesta.',
-        );
+      else setError(isPdf(file) ? t.scanner.noQrPdf : t.scanner.noQrImage);
     } catch {
-      setError('Datoteka nije mogla da se pročita.');
+      setError(t.scanner.unreadable);
     } finally {
       setBusy(false);
     }
@@ -138,12 +134,12 @@ export function Scanner(props: { onScan: (text: string) => void }) {
               setCamera(!camera);
             }}
           >
-            {camera ? 'Zaustavi kameru' : 'Kamera'}
+            {camera ? t.scanner.stopCamera : t.scanner.camera}
           </button>
         )}
       </div>
       <label class="field">
-        Slika ili PDF računa
+        {t.scanner.file}
         <input
           type="file"
           accept="image/*,application/pdf,.pdf"
@@ -156,9 +152,9 @@ export function Scanner(props: { onScan: (text: string) => void }) {
         />
       </label>
       <details>
-        <summary>Tekst koda</summary>
+        <summary>{t.scanner.text}</summary>
         <div class="field">
-          <label for="scan-text">Tekst IPS QR koda</label>
+          <label for="scan-text">{t.scanner.textLabel}</label>
           <textarea
             id="scan-text"
             rows={3}
@@ -176,12 +172,12 @@ export function Scanner(props: { onScan: (text: string) => void }) {
             found(pasted.trim());
           }}
         >
-          Učitaj tekst
+          {t.scanner.loadText}
         </button>
       </details>
       {busy && (
         <p class="hint" aria-live="polite">
-          Tražim QR kod…
+          {t.scanner.searching}
         </p>
       )}
       {error && (

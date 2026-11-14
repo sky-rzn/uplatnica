@@ -4,25 +4,9 @@ import { resolveOccurrence } from '../core/schedule';
 import { formatAccountShort } from '../core/serbia/account';
 import { effectiveAmount } from '../core/status';
 import type { Dataset } from '../db/schema';
+import { t } from '../i18n';
 
 const BOM = '\uFEFF';
-
-const HEADER = [
-  'Datum plaćanja',
-  'Odeljak',
-  'Naziv',
-  'Period',
-  'Rok',
-  'Iznos',
-  'Plaćeno',
-  'Primalac',
-  'Račun primaoca',
-  'Šifra plaćanja',
-  'Model',
-  'Poziv na broj',
-  'Platilac',
-  'Napomena',
-];
 
 function cell(value: string): string {
   return /[";\r\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
@@ -44,7 +28,7 @@ export function paymentsCsv(data: Dataset): string {
     .flatMap((o) => (o.paidAt === undefined ? [] : [{ o, paidAt: o.paidAt }]))
     .sort((a, b) => (a.paidAt < b.paidAt ? -1 : a.paidAt > b.paidAt ? 1 : 0));
 
-  const rows = [HEADER];
+  const rows = [t.csv.header];
   for (const { o, paidAt } of paid) {
     const bill = bills.get(o.billId);
     if (!bill) continue;

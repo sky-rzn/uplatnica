@@ -1,31 +1,33 @@
 import type { AgendaTotal, AgendaGroup } from '../core/agenda';
 import { formatAmount } from '../core/money';
-import { plural } from './period-text';
+import { t } from '../i18n';
 import { href } from './router';
 
-export function totalText(t: AgendaTotal): string {
-  const count = `${String(t.count)} ${plural(t.count, 'račun', 'računa')}`;
-  const sum = `${formatAmount(t.sum)} RSD`;
-  if (t.unknown === 0) return `${count}, ${sum}`;
-  if (t.unknown === t.count) return `${count} bez iznosa`;
-  return `${count}, ${sum} + ${String(t.unknown)} bez iznosa`;
+export function totalText(total: AgendaTotal): string {
+  const sum = `${formatAmount(total.sum)} RSD`;
+  if (total.unknown === 0) return t.overview.total(total.count, sum);
+  if (total.unknown === total.count)
+    return t.overview.totalUnknown(total.count);
+  return t.overview.totalPartly(total.count, sum, total.unknown);
 }
 
 function Summary(props: { totals: Record<AgendaGroup, AgendaTotal> }) {
   const { overdue, now } = props.totals;
   if (overdue.count === 0 && now.count === 0)
-    return <p class="summary muted">Trenutno nema ništa za plaćanje.</p>;
+    return <p class="summary muted">{t.overview.nothing}</p>;
   return (
     <p class="summary">
       {now.count > 0 && (
         <span class="st-due">
-          Za plaćanje sada: <strong>{totalText(now)}</strong>
+          {t.overview.dueNow}
+          <strong>{totalText(now)}</strong>
         </span>
       )}
       {overdue.count > 0 && (
         <span class="st-overdue">
           <span aria-hidden="true">! </span>
-          Kasni: <strong>{totalText(overdue)}</strong>
+          {t.overview.overdue}
+          <strong>{totalText(overdue)}</strong>
         </span>
       )}
     </p>
@@ -40,34 +42,34 @@ export function OverviewHeader(props: {
   return (
     <>
       <div class="toolbar">
-        <h1>Pregled</h1>
+        <h1>{t.overview.title}</h1>
         {props.ready && (
           <div class="actions">
             <a class="button" href={href({ name: 'scan' })}>
-              Skeniraj račun
+              {t.common.scanBill}
             </a>
             <a class="button primary" href={href({ name: 'bill', id: null })}>
-              Novi račun
+              {t.common.newBill}
             </a>
           </div>
         )}
       </div>
       {props.totals && (
         <div class="overview-bar">
-          <div class="segmented" role="group" aria-label="Prikaz">
+          <div class="segmented" role="group" aria-label={t.overview.view}>
             <a
               class="button"
               href={href({ name: 'timeline' })}
               {...(props.view === 'timeline' ? { 'aria-current': 'page' } : {})}
             >
-              Dijagram
+              {t.overview.timeline}
             </a>
             <a
               class="button"
               href={href({ name: 'list' })}
               {...(props.view === 'list' ? { 'aria-current': 'page' } : {})}
             >
-              Lista
+              {t.overview.list}
             </a>
           </div>
           <Summary totals={props.totals} />

@@ -4,6 +4,7 @@ import { periodReference } from '../core/forms/occurrence';
 import { formatAmount } from '../core/money';
 import { formatAccountShort } from '../core/serbia/account';
 import type { Dataset } from '../db/schema';
+import { t } from '../i18n';
 import { periodLabel } from '../ui/period-text';
 
 export const ICS_AHEAD_DAYS = 366;
@@ -77,15 +78,18 @@ export function dueDatesIcs(
     const reference =
       occ.stored?.reference ??
       periodReference(bill, profiles.get(bill.profileId), occ.start);
+    const m = t.ics;
     const details = [
-      `Period: ${periodLabel(occ)}`,
-      `Iznos: ${amount === undefined ? 'još nije unet' : `${formatAmount(amount)} RSD`}`,
-      `Primalac: ${bill.payee.name}`,
-      `Račun: ${formatAccountShort(bill.payee.account)}`,
-      `Šifra plaćanja: ${bill.paymentCode}`,
+      `${m.period}: ${periodLabel(occ)}`,
+      `${m.amount}: ${amount === undefined ? m.noAmount : `${formatAmount(amount)} RSD`}`,
+      `${m.payee}: ${bill.payee.name}`,
+      `${m.account}: ${formatAccountShort(bill.payee.account)}`,
+      `${m.paymentCode}: ${bill.paymentCode}`,
       ...(reference === undefined
         ? []
-        : [`Poziv na broj: ${bill.model ? `${bill.model} ` : ''}${reference}`]),
+        : [
+            `${m.reference}: ${bill.model ? `${bill.model} ` : ''}${reference}`,
+          ]),
     ];
     const summary =
       amount === undefined
