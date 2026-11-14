@@ -1,0 +1,24 @@
+{
+  "group": "utilities",
+  "verifiedAt": "2026-11-13",
+  "sources": [
+    "https://www.eps.rs/lat/snabdevanje/Stranice/pitanja-odgovori.aspx",
+    "https://www.eps.rs/lat/vesti/Stranice/nov-racun.aspx"
+  ],
+  "bills": [
+    {
+      "id": "eps-beograd",
+      "title": "EPS",
+      "payeeName": "EPS AD Beograd",
+      "account": "200-75409-96",
+      "paymentCode": "289",
+      "purpose": "Uplata po računu za el. energiju",
+      "model": "97",
+      "reference": "{NAPLATNI:11}{YY}{MM}",
+      "amountMode": "variable",
+      "everyMonths": 1,
+      "due": { "day": 28, "monthOffset": 1 },
+      "shiftToWorkday": true
+    }
+  ]
+}

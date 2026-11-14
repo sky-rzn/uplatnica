@@ -2,6 +2,7 @@ import { useState } from 'preact/hooks';
 import { todayIso } from '../../core/date';
 import {
   EVERY_MONTHS,
+  applyPreset,
   billToDraft,
   customPlaceholders,
   emptyBillDraft,
@@ -14,6 +15,7 @@ import type { Bill, Profile, ReferenceModel, Section } from '../../core/model';
 import { formatAmount } from '../../core/money';
 import { formatAccount, normalizeAccount } from '../../core/serbia/account';
 import { PAYMENT_BASES, paymentBasis } from '../../core/serbia/paymentCodes';
+import { PRESET_GROUPS, findPreset } from '../../core/serbia/presets';
 import { paymentBasisName } from '../payment-basis';
 import { newId } from '../../db/repo';
 import { t } from '../../i18n';
@@ -55,6 +57,41 @@ function PaymentCodeList() {
   );
 }
 
+function PresetPicker(props: { value: string; onPick: (id: string) => void }) {
+  const found = findPreset(props.value);
+  const p = t.presets;
+  return (
+    <div class="field preset">
+      <label for="bill-preset">{p.label}</label>
+      <select
+        id="bill-preset"
+        aria-describedby={found ? 'bill-preset-note' : undefined}
+        value={props.value}
+        onChange={(ev) => {
+          props.onPick(ev.currentTarget.value);
+        }}
+      >
+        <option value="">{p.none}</option>
+        {PRESET_GROUPS.map((g) => (
+          <optgroup key={g.group} label={p.groups[g.group]}>
+            {g.bills.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.title}
+              </option>
+            ))}
+          </optgroup>
+        ))}
+      </select>
+      {found && (
+        <div class="hint" id="bill-preset-note">
+          <p>{p.notes[found.group.group]}</p>
+          <p>{p.checked(formatDate(found.group.verifiedAt))}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Editor(props: {
   bill?: Bill;
   sections: readonly Section[];
@@ -85,6 +122,7 @@ function Editor(props: {
   const [scanning, setScanning] = useState(false);
   const [scanFailure, setScanFailure] = useState(initial.failure);
   const [saving, setSaving] = useState(false);
+  const [presetId, setPresetId] = useState('');
   const result = validateBill(draft, {
     id,
     sections: props.sections,
@@ -132,6 +170,15 @@ function Editor(props: {
     setScanning(false);
   };
 
+  const pickPreset = (pid: string) => {
+    setPresetId(pid);
+    const found = findPreset(pid);
+    if (!found) return;
+    setDraft(applyPreset(draft, found.preset));
+    setNotes([]);
+    fb.reset();
+  };
+
   const save = async () => {
     fb.submit();
     if (!result.value || hasErrors(result)) {
@@ -163,6 +210,7 @@ function Editor(props: {
         void save();
       }}
     >
+      {!props.bill && <PresetPicker value={presetId} onPick={pickPreset} />}
       <div class="scan-fill">
         <button
           type="button"

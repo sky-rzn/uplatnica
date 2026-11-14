@@ -24,6 +24,22 @@ import { QrFields } from '../uplatnica/QrFields';
 import { Scanner } from '../scanner/Scanner';
 import { ScanFailure, ScanNotes, readScan } from '../scanner/scan-result';
 
+const FOCUSABLE =
+  'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), summary, [tabindex]:not([tabindex="-1"])';
+
+/** Keeps Tab and Shift+Tab inside the dialog. */
+function trapTab(dialog: HTMLElement, e: KeyboardEvent): void {
+  const items = Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE));
+  const first = items[0];
+  const last = items[items.length - 1];
+  if (!first || !last) return;
+  const at = items.indexOf(document.activeElement as HTMLElement);
+  if (e.shiftKey ? at <= 0 : at === -1 || at === items.length - 1) {
+    e.preventDefault();
+    (e.shiftKey ? last : first).focus();
+  }
+}
+
 function QrDetails({ slip }: { slip: Slip | null }) {
   if (!slip) return <p class="hint">{t.occurrence.fixErrors}</p>;
   const { qr } = slip;
@@ -75,19 +91,23 @@ export function OccurrencePanel(props: {
   const result = validateOccurrence(draft, ctx, 'pay');
   const fb = useFeedback(result);
   const heading = useRef<HTMLHeadingElement>(null);
+  const dialog = useRef<HTMLDivElement>(null);
   const paid = occ.stored?.paidAt !== undefined;
 
   const close = useRef(onClose);
   close.current = onClose;
 
   useEffect(() => {
+    const opener = document.activeElement;
     heading.current?.focus();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close.current();
+      if (e.key === 'Tab' && dialog.current) trapTab(dialog.current, e);
     };
     addEventListener('keydown', onKey);
     return () => {
       removeEventListener('keydown', onKey);
+      if (opener instanceof HTMLElement && opener.isConnected) opener.focus();
     };
   }, []);
 
@@ -199,6 +219,7 @@ export function OccurrencePanel(props: {
       <div class="panel-backdrop" onClick={onClose} />
       <div
         class="panel"
+        ref={dialog}
         role="dialog"
         aria-modal="true"
         aria-labelledby="occ-title"

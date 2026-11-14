@@ -108,6 +108,7 @@ export const srLatn = {
   app: {
     brand: 'Uplatnica',
     mainMenu: 'Glavni meni',
+    skip: 'Na sadržaj',
     nav: {
       timeline: 'Pregled',
       bills: 'Računi',
@@ -124,6 +125,12 @@ export const srLatn = {
   settings: {
     title: 'Podešavanja',
     language: 'Jezik',
+    theme: 'Tema',
+    themes: {
+      system: 'kao u sistemu',
+      light: 'svetla',
+      dark: 'tamna',
+    },
   },
 
   setup: {
@@ -251,6 +258,26 @@ export const srLatn = {
     nextDues: 'Sledeći rokovi: ',
     lastDue: 'Poslednji rok: ',
     other: 'Ostalo',
+  },
+
+  presets: {
+    label: 'Šablon',
+    none: 'bez šablona',
+    groups: {
+      pausal: 'Paušal',
+      'property-tax': 'Porez na imovinu',
+      utilities: 'Komunalije',
+    },
+    notes: {
+      pausal:
+        'Iznos i poziv na broj prepišite iz rešenja Poreske uprave u ePorezi; menjaju se svake godine. Poziv na broj unesite bez prve dve cifre, kontrolni broj se dodaje sam.',
+      'property-tax':
+        'Naziv primaoca, iznos rate i poziv na broj prepišite iz rešenja o porezu na imovinu. Poziv na broj unesite bez prve dve cifre, kontrolni broj se dodaje sam.',
+      utilities:
+        'Naplatni broj je na računu za struju. Račun 200-75409-96 važi za Beograd od oktobarskog računa 2026; u drugim gradovima popunite račun iz QR koda.',
+    },
+    checked: (date: string) =>
+      `Podaci su provereni ${date}. Pre plaćanja ih uporedite sa rešenjem ili računom.`,
   },
 
   occurrence: {
@@ -415,6 +442,7 @@ export const srLatn = {
     cameraMissing: 'Kamera nije pronađena. Učitajte sliku računa.',
     cameraFailed: 'Kamera nije mogla da se pokrene. Učitajte sliku računa.',
     video: 'Slika sa kamere',
+    zoom: 'Uvećanje',
     aim: 'Usmerite kameru tako da QR kod bude unutar okvira.',
     noQrPdf:
       'U PDF-u nije pronađen QR kod. Ako je kod nacrtan, a ne umetnut kao slika, napravite snimak ekrana i učitajte njega.',

@@ -1,6 +1,6 @@
 import { LOCALES, locale, t } from '../../i18n';
 import { SelectField, useFeedback } from '../form';
-import { chooseLocale } from '../preferences';
+import { THEMES, chooseLocale, chooseTheme, savedTheme } from '../preferences';
 
 const NO_ISSUES = { errors: {}, warnings: {} };
 
@@ -18,6 +18,18 @@ export function SettingsView() {
           value={locale()}
           options={LOCALES}
           onChange={chooseLocale}
+        />
+        <SelectField
+          id="settings-theme"
+          name="theme"
+          label={t.settings.theme}
+          feedback={fb}
+          value={savedTheme()}
+          options={THEMES.map((theme) => ({
+            value: theme,
+            label: t.settings.themes[theme],
+          }))}
+          onChange={chooseTheme}
         />
       </div>
     </section>

@@ -1,0 +1,23 @@
+{
+  "group": "property-tax",
+  "verifiedAt": "2026-11-13",
+  "sources": [
+    "https://www.paragraf.rs/propisi/zakon_o_porezima_na_imovinu.html",
+    "https://www.paragraf.rs/baza-znanja/knjigovodstvo/racuni-za-uplatu-javnih-prihoda.html"
+  ],
+  "bills": [
+    {
+      "id": "property-tax",
+      "title": "Porez na imovinu",
+      "payeeName": "",
+      "account": "840-713121843-57",
+      "paymentCode": "253",
+      "purpose": "Porez na imovinu",
+      "model": "97",
+      "amountMode": "fixed",
+      "everyMonths": 3,
+      "due": { "daysFromStart": 44 },
+      "shiftToWorkday": true
+    }
+  ]
+}

@@ -115,6 +115,7 @@ export const en: Messages = {
   app: {
     brand: 'Uplatnica',
     mainMenu: 'Main menu',
+    skip: 'Skip to content',
     nav: {
       timeline: 'Overview',
       bills: 'Bills',
@@ -131,6 +132,12 @@ export const en: Messages = {
   settings: {
     title: 'Settings',
     language: 'Language',
+    theme: 'Theme',
+    themes: {
+      system: 'as in the system',
+      light: 'light',
+      dark: 'dark',
+    },
   },
 
   setup: {
@@ -261,6 +268,26 @@ export const en: Messages = {
     nextDues: 'Next due dates: ',
     lastDue: 'Last due date: ',
     other: 'Other',
+  },
+
+  presets: {
+    label: 'Template',
+    none: 'no template',
+    groups: {
+      pausal: 'Paušal (flat-rate entrepreneur)',
+      'property-tax': 'Property tax',
+      utilities: 'Utilities',
+    },
+    notes: {
+      pausal:
+        'Copy the amount and the reference from the Tax Administration decision in ePorezi; they change every year. Enter the reference without its first two digits, the check digits are added automatically.',
+      'property-tax':
+        'Copy the payee name, the instalment and the reference from the property tax decision. Enter the reference without its first two digits, the check digits are added automatically.',
+      utilities:
+        'The billing number (naplatni broj) is on the electricity bill. Account 200-75409-96 is for Belgrade from the October 2026 bill on; elsewhere fill in the account from the QR code.',
+    },
+    checked: (date: string) =>
+      `The details were checked on ${date}. Compare them with your decision or bill before paying.`,
   },
 
   occurrence: {
@@ -426,6 +453,7 @@ export const en: Messages = {
     cameraMissing: 'No camera found. Load a picture of the bill.',
     cameraFailed: 'The camera could not start. Load a picture of the bill.',
     video: 'Camera picture',
+    zoom: 'Zoom',
     aim: 'Point the camera so the QR code is inside the frame.',
     noQrPdf:
       'No QR code found in the PDF. If the code is drawn rather than embedded as a picture, take a screenshot and load that.',

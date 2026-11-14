@@ -13,6 +13,34 @@ function cameraError(e: unknown): string {
   return t.scanner.cameraFailed;
 }
 
+interface Zoom {
+  track: MediaStreamTrack;
+  min: number;
+  max: number;
+  step: number;
+  value: number;
+}
+
+interface ZoomRange {
+  min: number;
+  max: number;
+  step?: number;
+}
+
+function zoomOf(track: MediaStreamTrack): Zoom | undefined {
+  if (!('getCapabilities' in track)) return undefined;
+  const range = (track.getCapabilities() as { zoom?: ZoomRange }).zoom;
+  if (!range || !(range.max > range.min)) return undefined;
+  const current = (track.getSettings() as { zoom?: number }).zoom;
+  return {
+    track,
+    min: range.min,
+    max: range.max,
+    step: range.step && range.step > 0 ? range.step : 0.1,
+    value: current ?? range.min,
+  };
+}
+
 /** Reads codes for as long as onScan() returns true. */
 export function Camera(props: {
   onScan: (text: string) => boolean;
@@ -22,6 +50,7 @@ export function Camera(props: {
   const finder = useRef<HTMLDivElement>(null);
   const handlers = useRef(props);
   handlers.current = props;
+  const [zoom, setZoom] = useState<Zoom>();
 
   useEffect(() => {
     let stream: MediaStream | undefined;
@@ -80,6 +109,7 @@ export function Camera(props: {
             advanced: [{ focusMode: 'continuous' } as MediaTrackConstraintSet],
           })
           .catch(() => undefined);
+        if (track) setZoom(zoomOf(track));
         video.current.srcObject = stream;
         await video.current.play();
         void tick();
@@ -101,6 +131,28 @@ export function Camera(props: {
         <video ref={video} muted playsInline aria-label={t.scanner.video} />
         <div ref={finder} class="finder" hidden />
       </div>
+      {zoom && (
+        <div class="field zoom">
+          <label for="camera-zoom">{t.scanner.zoom}</label>
+          <input
+            id="camera-zoom"
+            type="range"
+            min={zoom.min}
+            max={zoom.max}
+            step={zoom.step}
+            value={zoom.value}
+            onInput={(e) => {
+              const value = Number(e.currentTarget.value);
+              setZoom({ ...zoom, value });
+              void zoom.track
+                .applyConstraints({
+                  advanced: [{ zoom: value } as MediaTrackConstraintSet],
+                })
+                .catch(() => undefined);
+            }}
+          />
+        </div>
+      )}
       <p class="hint">{t.scanner.aim}</p>
     </div>
   );

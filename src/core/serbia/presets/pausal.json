@@ -1,0 +1,62 @@
+{
+  "group": "pausal",
+  "verifiedAt": "2026-11-13",
+  "sources": [
+    "https://www.paragraf.rs/baza-znanja/knjigovodstvo/racuni-za-uplatu-javnih-prihoda.html",
+    "https://purs.gov.rs/en/Bureau-for-Information/News/4608477/delivery-of-tax-decisions-for-2026-to-flat-rate-entrepreneurs-has-begun.html"
+  ],
+  "bills": [
+    {
+      "id": "pausal-tax",
+      "title": "Paušal - porez",
+      "payeeName": "Republika Srbija",
+      "account": "840-711122843-32",
+      "paymentCode": "253",
+      "purpose": "Porez na prihod od sam. delatnosti",
+      "model": "97",
+      "amountMode": "fixed",
+      "everyMonths": 1,
+      "due": { "day": 15, "monthOffset": 1 },
+      "shiftToWorkday": true
+    },
+    {
+      "id": "pausal-pension",
+      "title": "Paušal - PIO",
+      "payeeName": "Republika Srbija",
+      "account": "840-721313843-74",
+      "paymentCode": "253",
+      "purpose": "Doprinos za PIO",
+      "model": "97",
+      "amountMode": "fixed",
+      "everyMonths": 1,
+      "due": { "day": 15, "monthOffset": 1 },
+      "shiftToWorkday": true
+    },
+    {
+      "id": "pausal-health",
+      "title": "Paušal - zdravstvo",
+      "payeeName": "Republika Srbija",
+      "account": "840-721325843-61",
+      "paymentCode": "253",
+      "purpose": "Doprinos za zdravstveno osiguranje",
+      "model": "97",
+      "amountMode": "fixed",
+      "everyMonths": 1,
+      "due": { "day": 15, "monthOffset": 1 },
+      "shiftToWorkday": true
+    },
+    {
+      "id": "pausal-unemployment",
+      "title": "Paušal - nezaposlenost",
+      "payeeName": "Republika Srbija",
+      "account": "840-721331843-06",
+      "paymentCode": "253",
+      "purpose": "Doprinos za slučaj nezaposlenosti",
+      "model": "97",
+      "amountMode": "fixed",
+      "everyMonths": 1,
+      "due": { "day": 15, "monthOffset": 1 },
+      "shiftToWorkday": true
+    }
+  ]
+}

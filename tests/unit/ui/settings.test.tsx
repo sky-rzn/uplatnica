@@ -2,7 +2,7 @@
 import { fireEvent, screen } from '@testing-library/preact';
 import { afterEach, describe, expect, it } from 'vitest';
 import { setLocale } from '../../../src/i18n';
-import { savedLocale } from '../../../src/ui/preferences';
+import { savedLocale, savedTheme } from '../../../src/ui/preferences';
 import { makeRepo, renderApp } from './harness';
 
 afterEach(() => {
@@ -27,5 +27,16 @@ describe('SettingsView', () => {
       target: { value: 'sr-Cyrl' },
     });
     expect(await screen.findByRole('link', { name: 'Рачуни' })).toBeTruthy();
+  });
+
+  it('switches the theme without following the system', async () => {
+    renderApp(makeRepo(), '#/settings');
+    const select = await screen.findByLabelText('Tema');
+    fireEvent.change(select, { target: { value: 'dark' } });
+    expect(document.documentElement.dataset.theme).toBe('dark');
+    expect(savedTheme()).toBe('dark');
+    fireEvent.change(select, { target: { value: 'system' } });
+    expect(document.documentElement.dataset.theme).toBeUndefined();
+    expect(savedTheme()).toBe('system');
   });
 });

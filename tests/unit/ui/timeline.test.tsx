@@ -105,4 +105,27 @@ describe('TimelineView', () => {
       expect(screen.queryByRole('button', { name: /^EPS,/ })).toBeNull();
     });
   });
+
+  it('keeps focus inside the panel and returns it on close', async () => {
+    renderApp(repo, '#/');
+    const opener = await block(/^EPS, oktobar 2026/);
+    opener.focus();
+    fireEvent.click(opener);
+    const dialog = screen.getByRole('dialog');
+    expect(document.activeElement).toBe(
+      screen.getByRole('heading', { name: 'EPS, oktobar 2026' }),
+    );
+
+    fireEvent.keyDown(window, { key: 'Tab', shiftKey: true });
+    const save = screen.getByRole('button', { name: 'Sačuvaj' });
+    expect(document.activeElement).toBe(save);
+    fireEvent.keyDown(window, { key: 'Tab' });
+    expect(dialog.contains(document.activeElement)).toBe(true);
+    expect(document.activeElement).toBe(
+      screen.getByRole('button', { name: 'Zatvori' }),
+    );
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(document.activeElement).toBe(opener);
+  });
 });

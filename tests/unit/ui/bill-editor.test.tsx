@@ -114,4 +114,42 @@ describe('BillEditor', () => {
       expect(await repo.listBills()).toEqual([]);
     });
   });
+
+  it('fills a new bill from a preset', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 10, 13, 12));
+    renderApp(repo, '#/bill/new');
+    fireEvent.change(await screen.findByLabelText('Šablon'), {
+      target: { value: 'pausal-pension' },
+    });
+    expect(screen.getByText(/rešenja Poreske uprave u ePorezi/)).toBeTruthy();
+    expect(screen.getByText(/provereni 13\.11\.2026\./)).toBeTruthy();
+    expect(
+      screen.getByLabelText<HTMLInputElement>('Račun primaoca').value,
+    ).toBe('840-721313843-74');
+
+    type('Iznos (RSD)', '12.345,67');
+    type('Poziv na broj', '50123456789');
+    fireEvent.click(screen.getByRole('button', { name: 'Sačuvaj' }));
+    await screen.findByRole('heading', { name: 'Računi' });
+    const [saved] = await repo.listBills();
+    expect(saved).toMatchObject({
+      title: 'Paušal - PIO',
+      sectionId: 's1',
+      profileId: 'p1',
+      payee: { name: 'Republika Srbija', account: '840000072131384374' },
+      paymentCode: '253',
+      model: '97',
+      referenceTemplate: '50123456789',
+      amount: 1234567,
+      schedule: {
+        kind: 'periodic',
+        everyMonths: 1,
+        due: { day: 15, monthOffset: 1 },
+        start: '2026-11',
+        shiftToWorkday: true,
+      },
+    });
+    vi.useRealTimers();
+  });
 });

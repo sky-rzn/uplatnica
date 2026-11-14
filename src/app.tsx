@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'preact/hooks';
 import type { Repo } from './db/repo';
 import { todayIso } from './core/date';
 import { locale, t } from './i18n';
@@ -72,8 +73,28 @@ function BackupReminder() {
   );
 }
 
+function pageTitle(route: Route): string {
+  switch (route.name) {
+    case 'timeline':
+    case 'list':
+      return t.overview.title;
+    case 'bill':
+      return route.id === null ? t.common.newBill : t.app.nav.bills;
+    case 'scan':
+      return t.common.scanning;
+    case 'sync':
+      return t.sync.title;
+    case 'print':
+      return route.items.length === 1 ? t.print.one : t.print.many;
+    default:
+      return t.app.nav[route.name];
+  }
+}
+
 function Shell() {
   const route = useRoute();
+  const main = useRef<HTMLElement>(null);
+  const shown = useRef(href(route));
   const current =
     route.name === 'bill'
       ? 'bills'
@@ -84,8 +105,27 @@ function Shell() {
             route.name === 'scan'
           ? 'timeline'
           : route.name;
+
+  useEffect(() => {
+    document.title = `${pageTitle(route)} - ${t.app.brand}`;
+    const at = href(route);
+    if (at === shown.current) return;
+    shown.current = at;
+    main.current?.focus();
+  }, [route]);
+
   return (
     <>
+      <a
+        class="skip"
+        href="#main"
+        onClick={(e) => {
+          e.preventDefault();
+          main.current?.focus();
+        }}
+      >
+        {t.app.skip}
+      </a>
       <header class="top">
         <a class="brand" href={href({ name: 'timeline' })}>
           {t.app.brand}
@@ -102,7 +142,12 @@ function Shell() {
           ))}
         </nav>
       </header>
-      <main class={route.name === 'timeline' ? 'wide' : undefined}>
+      <main
+        id="main"
+        ref={main}
+        tabIndex={-1}
+        class={route.name === 'timeline' ? 'wide' : undefined}
+      >
         <Page route={route} />
       </main>
       <footer>

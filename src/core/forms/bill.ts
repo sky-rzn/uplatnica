@@ -10,6 +10,7 @@ import type {
 } from '../model';
 import { parseAmount, type Para } from '../money';
 import { upcomingPeriods, type Period } from '../schedule';
+import type { BillPreset } from '../serbia/presets';
 import { formatAccountShort, normalizeAccount } from '../serbia/account';
 import { QR_TEXT_LIMITS, checkQrText } from '../serbia/ipsQr';
 import {
@@ -395,4 +396,39 @@ export function validateBill(d: BillDraft, ctx: BillContext): BillFormResult {
   const notes = d.notes.trim();
   if (notes !== '') bill.notes = notes;
   return { value: bill, errors, warnings, preview };
+}
+
+/** The first month of the calendar-aligned period of everyMonths that holds month. */
+function alignMonth(month: string, everyMonths: EveryMonths): string {
+  const ym = parseYearMonth(month);
+  if (!ym) return month;
+  const m = ym.month - ((ym.month - 1) % everyMonths);
+  return `${String(ym.year).padStart(4, '0')}-${String(m).padStart(2, '0')}`;
+}
+
+/** Fills a draft from a preset, keeping its section, payer and first period. */
+export function applyPreset(d: BillDraft, preset: BillPreset): BillDraft {
+  const base = emptyBillDraft(d.sectionId, d.profileId, '0000-01-01');
+  const due = preset.due;
+  return {
+    ...base,
+    title: preset.title,
+    payeeName: preset.payeeName,
+    account: preset.account,
+    paymentCode: preset.paymentCode,
+    purpose: preset.purpose,
+    model: preset.model,
+    reference: preset.reference ?? '',
+    amountMode: preset.amountMode,
+    everyMonths: preset.everyMonths,
+    start: alignMonth(d.start, preset.everyMonths),
+    shiftToWorkday: preset.shiftToWorkday,
+    ...('daysFromStart' in due
+      ? { dueKind: 'daysFromStart', daysFromStart: String(due.daysFromStart) }
+      : {
+          dueKind: due.day === 'last' ? 'last' : 'day',
+          dueDay: due.day === 'last' ? base.dueDay : String(due.day),
+          monthOffset: String(due.monthOffset ?? 0),
+        }),
+  };
 }
