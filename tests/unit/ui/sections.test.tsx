@@ -18,6 +18,7 @@ describe('SectionsView', () => {
       await waitFor(() => {
         expect(screen.queryByRole('form')).toBeNull();
       });
+      await screen.findByText(name);
     }
     expect((await repo.listSections()).map((s) => s.name)).toEqual([
       'Stan',

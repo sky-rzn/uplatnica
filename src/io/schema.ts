@@ -93,6 +93,12 @@ const occurrence = z.strictObject({
   updatedAt,
 });
 
+const tombstone = z.strictObject({
+  table: z.enum(['profiles', 'sections', 'bills', 'occurrences']),
+  key: id,
+  deletedAt: updatedAt,
+});
+
 export const backupSchema = z.strictObject({
   app: z.literal('uplatnica'),
   schemaVersion: z.number(),
@@ -102,4 +108,5 @@ export const backupSchema = z.strictObject({
   sections: z.array(section),
   bills: z.array(bill),
   occurrences: z.array(occurrence),
+  tombstones: z.array(tombstone),
 });

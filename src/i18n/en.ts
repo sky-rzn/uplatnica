@@ -351,15 +351,15 @@ export const en: Messages = {
       ].join(', ') +
       '.',
     mergeHint:
-      'Merging adds new records and changes existing ones only if the file has a later version. Nothing is deleted.',
+      'Merging adds new records and changes existing ones only if the file has a later version. Records deleted on another device are deleted here too, unless they were changed here later.',
     partialHint:
       ' The file holds only part of the data, so it cannot replace everything.',
     merge: 'Merge',
     replace: 'Replace everything',
     confirmReplace:
       'Replace all data with the contents of the file? A backup of the current data is downloaded first.',
-    merged: (added: number, updated: number, kept: number) =>
-      `Imported. New records: ${String(added)}, changed: ${String(updated)}, kept because they are the same or newer here: ${String(kept)}.`,
+    merged: (added: number, updated: number, kept: number, deleted: number) =>
+      `Imported. New records: ${String(added)}, changed: ${String(updated)}, kept because they are the same or newer here: ${String(kept)}, deleted: ${String(deleted)}.`,
     replaced: 'The data has been replaced with the contents of the file.',
     other: 'For other programs',
     otherHint:

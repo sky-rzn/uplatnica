@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { backupJson, fullBackup, sectionBackup } from '../../../src/io/export';
+import {
+  backupJson,
+  changesBackup,
+  fullBackup,
+  sectionBackup,
+} from '../../../src/io/export';
 import { parseBackup } from '../../../src/io/import';
 import { mergeDatasets } from '../../../src/io/merge';
 import { T0, dataset } from './fixtures';
@@ -26,6 +31,28 @@ describe('parseBackup', () => {
     expect(backup.profiles[0]).not.toHaveProperty('jmbg');
     expect(backup.occurrences).toEqual([]);
     expect(parseBackup(backupJson(backup))).toEqual({ ok: true, backup });
+  });
+
+  it('reads back the changes since a moment with what they refer to', () => {
+    const data = dataset();
+    const [, occ] = data.occurrences;
+    if (!occ) throw new Error('fixture');
+    occ.updatedAt = '2026-11-10T10:00:00.000Z';
+    data.tombstones = [
+      { table: 'bills', key: 'old', deletedAt: '2026-10-01T10:00:00.000Z' },
+      { table: 'bills', key: 'b9', deletedAt: '2026-11-10T10:00:00.000Z' },
+    ];
+    const backup = changesBackup(data, new Date('2026-11-10T10:00:00Z'), NOW);
+    expect(backup).toMatchObject({
+      partial: true,
+      profiles: data.profiles,
+      sections: data.sections,
+      bills: data.bills,
+      occurrences: [occ],
+      tombstones: [data.tombstones[1]],
+    });
+    expect(parseBackup(backupJson(backup))).toEqual({ ok: true, backup });
+    expect(changesBackup(data, NOW, NOW).bills).toEqual([]);
   });
 
   it('rejects what is not a backup', () => {
@@ -78,6 +105,23 @@ describe('parseBackup', () => {
       ],
     });
   });
+
+  it('rejects a record that is also marked deleted', () => {
+    const text = withData((b) => {
+      b.tombstones = [
+        { table: 'bills', key: 'b1', deletedAt: T0 },
+        { table: 'bills', key: 'b1', deletedAt: T0 },
+      ];
+    });
+    expect(parseBackup(text)).toEqual({
+      ok: false,
+      issues: [
+        { code: 'duplicate', path: 'tombstones[1]' },
+        { code: 'duplicate', path: 'tombstones[0]' },
+        { code: 'duplicate', path: 'tombstones[1]' },
+      ],
+    });
+  });
 });
 
 describe('mergeDatasets', () => {
@@ -99,7 +143,7 @@ describe('mergeDatasets', () => {
     });
 
     const { put, stats } = mergeDatasets(current, incoming);
-    expect(stats).toEqual({ added: 1, updated: 1, kept: 4 });
+    expect(stats).toEqual({ added: 1, updated: 1, kept: 4, deleted: 0 });
     expect(put.bills.map((b) => b.title)).toEqual(['Infostan novi']);
     expect(put.sections).toEqual([]);
     expect(put.occurrences.map((o) => o.periodKey)).toEqual(['2026-11']);

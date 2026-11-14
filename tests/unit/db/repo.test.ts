@@ -179,8 +179,68 @@ describe('Repo', () => {
       added: 0,
       updated: 1,
       kept: 4,
+      deleted: 0,
     });
     expect((await repo.getSection('s1'))?.name).toBe('Moj stan');
     expect((await repo.getBill('b1'))?.title).toBe('Novo');
+  });
+
+  it('leaves a tombstone for each deleted record', async () => {
+    await repo.saveBill(monthly);
+    await repo.saveOccurrence({
+      billId: 'b1',
+      periodKey: '2026-10',
+      amount: 1,
+    });
+    await repo.saveOccurrence({ billId: 'b1', periodKey: '2026-10' });
+    await repo.deleteOccurrence('b1', '2026-11');
+    await repo.deleteBill('b1');
+    await repo.deleteSection('s1');
+    await repo.deleteProfile('p1');
+    const deletedAt = '2026-11-13T10:00:00.000Z';
+    expect((await repo.dump()).tombstones).toEqual(
+      expect.arrayContaining([
+        { table: 'occurrences', key: '["b1","2026-10"]', deletedAt },
+        { table: 'bills', key: 'b1', deletedAt },
+        { table: 'sections', key: 's1', deletedAt },
+        { table: 'profiles', key: 'p1', deletedAt },
+      ]),
+    );
+    expect((await repo.dump()).tombstones).toHaveLength(4);
+  });
+
+  it('drops the tombstone when a record is saved again', async () => {
+    await repo.deleteSection('s1');
+    await repo.saveSection(section);
+    expect((await repo.dump()).tombstones).toEqual([]);
+  });
+
+  it('brings two devices to the same data', async () => {
+    await repo.replaceAll(dataset());
+    const other = new Repo(new UplatnicaDb(`test-${newId()}`), () => clock);
+    try {
+      await other.replaceAll(dataset());
+      await repo.deleteOccurrence('b1', '2026-09');
+      await repo.saveOccurrence({
+        billId: 'b1',
+        periodKey: '2026-11',
+        amount: 7,
+      });
+      clock = new Date('2026-11-13T11:00:00Z');
+      await other.deleteOccurrence('b1', '2026-10');
+      await other.saveSection({ ...section, name: 'Kuća' });
+
+      await other.merge(await repo.dump());
+      expect(await repo.merge(await other.dump())).toMatchObject({
+        deleted: 1,
+      });
+      const mine = await repo.dump();
+      expect(mine).toEqual(await other.dump());
+      expect(mine.occurrences.map((o) => o.periodKey)).toEqual(['2026-11']);
+      expect(mine.sections.map((x) => x.name)).toEqual(['Kuća']);
+      expect(mine.tombstones).toHaveLength(2);
+    } finally {
+      await other.db.delete();
+    }
   });
 });

@@ -50,7 +50,7 @@ function ImportCard() {
   const merge = async (backup: Backup) => {
     const s = await repo.merge(backup);
     setLoaded(null);
-    setMessage(t.data.merged(s.added, s.updated, s.kept));
+    setMessage(t.data.merged(s.added, s.updated, s.kept, s.deleted));
   };
 
   const replace = async (backup: Backup) => {

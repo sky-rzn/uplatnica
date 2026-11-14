@@ -55,5 +55,6 @@ export function dataset(): Dataset {
         updatedAt: T0,
       },
     ],
+    tombstones: [],
   };
 }

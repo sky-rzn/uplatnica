@@ -340,15 +340,15 @@ export const srLatn = {
       ].join(', ') +
       '.',
     mergeHint:
-      'Spajanje dodaje nove zapise, a postojeće menja samo ako su u datoteci kasnije izmenjeni. Ništa se ne briše.',
+      'Spajanje dodaje nove zapise, a postojeće menja samo ako su u datoteci kasnije izmenjeni. Zapisi obrisani na drugom uređaju brišu se i ovde, osim ako su ovde kasnije izmenjeni.',
     partialHint:
       ' Datoteka sadrži samo deo podataka, pa njome ne možete zameniti sve.',
     merge: 'Spoji',
     replace: 'Zameni sve',
     confirmReplace:
       'Zameniti sve podatke sadržajem datoteke? Pre zamene preuzima se rezervna kopija trenutnih podataka.',
-    merged: (added: number, updated: number, kept: number) =>
-      `Uvezeno. Novih zapisa: ${String(added)}, izmenjenih: ${String(updated)}, zadržanih jer su ovde isti ili noviji: ${String(kept)}.`,
+    merged: (added: number, updated: number, kept: number, deleted: number) =>
+      `Uvezeno. Novih zapisa: ${String(added)}, izmenjenih: ${String(updated)}, zadržanih jer su ovde isti ili noviji: ${String(kept)}, obrisanih: ${String(deleted)}.`,
     replaced: 'Podaci su zamenjeni sadržajem datoteke.',
     other: 'Za druge programe',
     otherHint:

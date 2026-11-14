@@ -77,7 +77,13 @@ export function checkIntegrity(data: Dataset): ImportIssue[] {
   const profiles = ids('profiles', data.profiles, (p) => p.id);
   const sections = ids('sections', data.sections, (s) => s.id);
   const bills = ids('bills', data.bills, (b) => b.id);
-  ids('occurrences', data.occurrences, occurrenceKey);
+  const occurrences = ids('occurrences', data.occurrences, occurrenceKey);
+  const live = { profiles, sections, bills, occurrences };
+  ids('tombstones', data.tombstones, (t) => JSON.stringify([t.table, t.key]));
+  data.tombstones.forEach((t, i) => {
+    if (live[t.table].has(t.key))
+      issues.push({ code: 'duplicate', path: `tombstones[${String(i)}]` });
+  });
 
   data.bills.forEach((b, i) => {
     if (!sections.has(b.sectionId))

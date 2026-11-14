@@ -27,6 +27,7 @@ export function fullBackup(data: Dataset, now: Date): Backup {
     sections: data.sections,
     bills: data.bills,
     occurrences: data.occurrences,
+    tombstones: data.tombstones,
   };
 }
 
@@ -57,6 +58,37 @@ export function sectionBackup(
     sections: data.sections.filter((s) => s.id === sectionId),
     bills,
     occurrences: [],
+    tombstones: [],
+  };
+}
+
+/**
+ * Records changed or deleted at or after since, with the bills, sections and
+ * payers they refer to, so that the result merges on its own.
+ */
+export function changesBackup(data: Dataset, since: Date, now: Date): Backup {
+  const changed = (iso: string) => Date.parse(iso) >= since.getTime();
+  const occurrences = data.occurrences.filter((o) => changed(o.updatedAt));
+  const billIds = new Set(occurrences.map((o) => o.billId));
+  const bills = data.bills.filter(
+    (b) => billIds.has(b.id) || changed(b.updatedAt),
+  );
+  const sectionIds = new Set(bills.map((b) => b.sectionId));
+  const profileIds = new Set(bills.map((b) => b.profileId));
+  return {
+    app: BACKUP_APP,
+    schemaVersion: SCHEMA_VERSION,
+    exportedAt: now.toISOString(),
+    partial: true,
+    profiles: data.profiles.filter(
+      (p) => profileIds.has(p.id) || changed(p.updatedAt),
+    ),
+    sections: data.sections.filter(
+      (s) => sectionIds.has(s.id) || changed(s.updatedAt),
+    ),
+    bills,
+    occurrences,
+    tombstones: data.tombstones.filter((t) => changed(t.deletedAt)),
   };
 }
 
