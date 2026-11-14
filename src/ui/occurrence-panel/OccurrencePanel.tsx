@@ -8,8 +8,8 @@ import {
 } from '../../core/forms/occurrence';
 import type { Bill, Profile } from '../../core/model';
 import { formatAmount } from '../../core/money';
-import { formatAccount } from '../../core/serbia/account';
-import { parseIpsQr } from '../../core/serbia/ipsQr';
+import { parseIpsQr, type ParsedIpsQr } from '../../core/serbia/ipsQr';
+import { applyScanToOccurrence, type ScanNote } from '../../core/forms/scan';
 import type { Block } from '../../core/timeline';
 import { buildSlip, slipInput, type Slip } from '../../core/uplatnica/slip';
 import { useRepo } from '../data';
@@ -19,6 +19,9 @@ import { qrIssueText } from '../messages';
 import { STATUS_ICONS, STATUS_LABELS, periodLabel } from '../period-text';
 import { navigate } from '../router';
 import { QrCode } from '../uplatnica/QrCode';
+import { QrFields } from '../uplatnica/QrFields';
+import { Scanner } from '../scanner/Scanner';
+import { ScanFailure, ScanNotes, readScan } from '../scanner/scan-result';
 
 function QrDetails({ slip }: { slip: Slip | null }) {
   if (!slip)
@@ -35,32 +38,10 @@ function QrDetails({ slip }: { slip: Slip | null }) {
     );
   const parsed = parseIpsQr(qr.text);
   if (!parsed.ok) return null;
-  const v = parsed.value;
-  const rows: [string, string | undefined][] = [
-    ['Primalac', v.payeeName],
-    ['Račun', formatAccount(v.account)],
-    ['Iznos', `${formatAmount(v.amount)} RSD`],
-    ['Šifra plaćanja', v.paymentCode],
-    ['Svrha', v.purpose],
-    [
-      'Poziv na broj',
-      v.reference && (v.model ? `${v.model} ${v.reference}` : v.reference),
-    ],
-    ['Platilac', v.payer],
-  ];
   return (
     <div class="qr-box">
       <QrCode text={qr.text} ecc={qr.ecc} label="IPS QR kod za uplatu" />
-      <dl>
-        {rows.map(([k, val]) =>
-          val ? (
-            <div key={k}>
-              <dt>{k}</dt>
-              <dd class="pre">{val}</dd>
-            </div>
-          ) : null,
-        )}
-      </dl>
+      <QrFields qr={parsed.value} />
       <p class="hint">
         Skenirajte kod u aplikaciji banke i proverite podatke pre potvrde.
       </p>
@@ -72,15 +53,24 @@ export function OccurrencePanel(props: {
   bill: Bill;
   block: Pick<Block, 'occ' | 'status'>;
   profile: Profile | undefined;
+  /** A code scanned from the bill, taken over when the panel opens. */
+  scan?: ParsedIpsQr;
   onClose: () => void;
 }) {
   const { bill, block, onClose } = props;
   const { occ } = block;
   const repo = useRepo();
   const ctx = { bill, occ, profile: props.profile, today: todayIso() };
-  const [draft, setDraft] = useState<OccurrenceDraft>(() =>
-    occurrenceToDraft(ctx, formatAmount),
-  );
+  const [initial] = useState(() => {
+    const draft = occurrenceToDraft(ctx, formatAmount);
+    return props.scan
+      ? applyScanToOccurrence(draft, bill, props.scan, formatAmount)
+      : { draft, notes: [] };
+  });
+  const [draft, setDraft] = useState<OccurrenceDraft>(initial.draft);
+  const [notes, setNotes] = useState<readonly ScanNote[]>(initial.notes);
+  const [scanning, setScanning] = useState(false);
+  const [scanFailure, setScanFailure] = useState<string[]>();
   const [busy, setBusy] = useState(false);
   const [showQr, setShowQr] = useState(false);
   const result = validateOccurrence(draft, ctx, 'pay');
@@ -165,6 +155,30 @@ export function OccurrencePanel(props: {
         )
       : null;
 
+  const onScan = (text: string) => {
+    const read = readScan(text);
+    if (!read.ok) {
+      setScanFailure(read.messages);
+      return;
+    }
+    const r = applyScanToOccurrence(draft, bill, read.qr, formatAmount);
+    setDraft(r.draft);
+    setNotes(r.notes);
+    setScanFailure(undefined);
+    setScanning(false);
+  };
+
+  const newAccount = notes.find((n) => n.code === 'account');
+  const takeAccount = async (account: string) => {
+    setBusy(true);
+    try {
+      await repo.saveBill({ ...bill, payee: { ...bill.payee, account } });
+      setNotes(notes.filter((n) => n.code !== 'account'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const remove = async () => {
     setBusy(true);
     try {
@@ -226,6 +240,23 @@ export function OccurrencePanel(props: {
           </div>
         )}
 
+        {notes.length > 0 && (
+          <div class="card notice">
+            <ScanNotes notes={notes} />
+            {newAccount && (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                  void takeAccount(newAccount.scanned);
+                }}
+              >
+                Upiši novi račun primaoca u račun
+              </button>
+            )}
+          </div>
+        )}
+
         <form
           class="form"
           aria-label="Period"
@@ -260,6 +291,17 @@ export function OccurrencePanel(props: {
           <div class="actions">
             <button
               type="button"
+              aria-expanded={scanning}
+              aria-controls="occ-scan"
+              onClick={() => {
+                setScanning(!scanning);
+                setScanFailure(undefined);
+              }}
+            >
+              Skeniraj račun
+            </button>
+            <button
+              type="button"
               aria-expanded={showQr}
               aria-controls="occ-qr"
               onClick={() => {
@@ -278,6 +320,12 @@ export function OccurrencePanel(props: {
               Uplatnica
             </button>
           </div>
+          {scanning && (
+            <section id="occ-scan" aria-label="Skeniranje računa">
+              <Scanner onScan={onScan} />
+              {scanFailure && <ScanFailure messages={scanFailure} />}
+            </section>
+          )}
           {showQr && (
             <section id="occ-qr" aria-label="IPS QR kod">
               <QrDetails slip={slip} />

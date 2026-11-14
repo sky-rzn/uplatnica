@@ -42,9 +42,14 @@ export function OverviewHeader(props: {
       <div class="toolbar">
         <h1>Pregled</h1>
         {props.ready && (
-          <a class="button primary" href={href({ name: 'bill', id: null })}>
-            Novi račun
-          </a>
+          <div class="actions">
+            <a class="button" href={href({ name: 'scan' })}>
+              Skeniraj račun
+            </a>
+            <a class="button primary" href={href({ name: 'bill', id: null })}>
+              Novi račun
+            </a>
+          </div>
         )}
       </div>
       {props.totals && (

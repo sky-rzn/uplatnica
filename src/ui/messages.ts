@@ -1,4 +1,6 @@
 import type { Issue } from '../core/forms/issues';
+import type { ScanNote } from '../core/forms/scan';
+import { formatAccount } from '../core/serbia/account';
 import type { IpsQrIssue } from '../core/serbia/ipsQr';
 import type { ImportIssue } from '../io/import';
 import type { ReferenceError } from '../core/serbia/reference';
@@ -117,5 +119,24 @@ export function importIssueText(issue: ImportIssue): string {
       return `${issue.path}: zapis se ponavlja.`;
     case 'missing-ref':
       return `${issue.path}: upućuje na zapis kojeg nema u datoteci.`;
+  }
+}
+
+const modelName = (m: string) => (m === '' ? 'bez modela' : `model ${m}`);
+
+export function scanNoteText(note: ScanNote): string {
+  switch (note.code) {
+    case 'account':
+      return `Račun primaoca na kodu je ${formatAccount(note.scanned)}, a u računu je ${formatAccount(note.current)}.`;
+    case 'model':
+      return `Poziv na broj na kodu je ${modelName(note.scanned)}, a račun koristi ${modelName(note.current)}, pa nije preuzet.`;
+    case 'unsupported-model':
+      return `Poziv na broj na kodu je po modelu ${note.model}, koji aplikacija ne podržava, pa nije preuzet.`;
+    case 'payment-code':
+      return `Šifra plaćanja na kodu je ${note.scanned}, a u računu ${note.current}. Uplatnica koristi šifru iz računa.`;
+    case 'no-amount':
+      return 'Kod nema iznos, pa iznos nije preuzet.';
+    case 'payee-reference':
+      return `Umesto poziva na broj kod ima referencu primaoca ${note.value}, koja nije preuzeta.`;
   }
 }

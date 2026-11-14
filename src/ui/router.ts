@@ -9,10 +9,11 @@ export type Route =
   | { name: 'timeline' }
   | { name: 'list' }
   | { name: 'bills' }
-  | { name: 'bill'; id: string | null }
+  | { name: 'bill'; id: string | null; qr?: string }
   | { name: 'sections' }
   | { name: 'profiles' }
   | { name: 'data' }
+  | { name: 'scan' }
   | { name: 'print'; items: PeriodRef[] };
 
 export function parseRoute(hash: string): Route {
@@ -28,6 +29,8 @@ export function parseRoute(hash: string): Route {
       return { name: 'profiles' };
     case 'data':
       return { name: 'data' };
+    case 'scan':
+      return { name: 'scan' };
     case 'print':
       return {
         name: 'print',
@@ -40,10 +43,10 @@ export function parseRoute(hash: string): Route {
       };
     case 'bill': {
       const id = parts[1];
-      return {
-        name: 'bill',
-        id: id && id !== 'new' ? decodeURIComponent(id) : null,
-      };
+      if (id && id !== 'new')
+        return { name: 'bill', id: decodeURIComponent(id) };
+      const qr = parts[2] ? decodeURIComponent(parts[2]) : '';
+      return qr ? { name: 'bill', id: null, qr } : { name: 'bill', id: null };
     }
     default:
       return { name: 'timeline' };
@@ -53,7 +56,10 @@ export function parseRoute(hash: string): Route {
 export function href(route: Route): string {
   switch (route.name) {
     case 'bill':
-      return `#/bill/${route.id === null ? 'new' : encodeURIComponent(route.id)}`;
+      if (route.id !== null) return `#/bill/${encodeURIComponent(route.id)}`;
+      return route.qr
+        ? `#/bill/new/${encodeURIComponent(route.qr)}`
+        : '#/bill/new';
     case 'print':
       return `#/print/${route.items
         .map(

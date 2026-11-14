@@ -9,6 +9,7 @@ import {
   type BillDraft,
   type DueKind,
 } from '../../core/forms/bill';
+import { applyScanToBill, type ScanNote } from '../../core/forms/scan';
 import type { Bill, Profile, ReferenceModel, Section } from '../../core/model';
 import { formatAmount } from '../../core/money';
 import { formatAccount, normalizeAccount } from '../../core/serbia/account';
@@ -26,6 +27,8 @@ import {
 import { formatDate } from '../format';
 import { issueText } from '../messages';
 import { href, navigate } from '../router';
+import { Scanner } from '../scanner/Scanner';
+import { ScanFailure, ScanNotes, readScan } from '../scanner/scan-result';
 import { EVERY_LABELS } from '../schedule-text';
 
 const MODELS: readonly { value: ReferenceModel; label: string }[] = [
@@ -72,19 +75,30 @@ function Editor(props: {
   bill?: Bill;
   sections: readonly Section[];
   profiles: readonly Profile[];
+  qr?: string;
 }) {
   const repo = useRepo();
   const today = todayIso();
   const [id] = useState(() => props.bill?.id ?? newId());
-  const [draft, setDraft] = useState<BillDraft>(() =>
-    props.bill
+  const [initial] = useState(() => {
+    const draft = props.bill
       ? billToDraft(props.bill, formatAmount)
       : emptyBillDraft(
           props.sections.find((s) => !s.archived)?.id ?? '',
           props.profiles[0]?.id ?? '',
           today,
-        ),
-  );
+        );
+    const read = props.qr === undefined ? undefined : readScan(props.qr);
+    if (!read?.ok) return { draft, notes: [], failure: read?.messages };
+    return {
+      ...applyScanToBill(draft, read.qr, formatAmount),
+      failure: undefined,
+    };
+  });
+  const [draft, setDraft] = useState<BillDraft>(initial.draft);
+  const [notes, setNotes] = useState<readonly ScanNote[]>(initial.notes);
+  const [scanning, setScanning] = useState(false);
+  const [scanFailure, setScanFailure] = useState(initial.failure);
   const [saving, setSaving] = useState(false);
   const result = validateBill(draft, {
     id,
@@ -119,6 +133,19 @@ function Editor(props: {
   const vars = customPlaceholders(draft.reference);
   const { preview } = result;
   const datesError = fb.error('dates');
+
+  const onScan = (text: string) => {
+    const read = readScan(text);
+    if (!read.ok) {
+      setScanFailure(read.messages);
+      return;
+    }
+    const r = applyScanToBill(draft, read.qr, formatAmount);
+    setDraft(r.draft);
+    setNotes(r.notes);
+    setScanFailure(undefined);
+    setScanning(false);
+  };
 
   const save = async () => {
     fb.submit();
@@ -157,6 +184,31 @@ function Editor(props: {
         void save();
       }}
     >
+      <div class="scan-fill">
+        <button
+          type="button"
+          aria-expanded={scanning}
+          aria-controls="bill-scan"
+          onClick={() => {
+            setScanning(!scanning);
+            setScanFailure(undefined);
+          }}
+        >
+          Popuni iz QR koda
+        </button>
+        <p class="hint">
+          Primalac, račun, šifra, svrha i poziv na broj preuzimaju se sa IPS QR
+          koda na računu.
+        </p>
+        {scanning && (
+          <section id="bill-scan" aria-label="Skeniranje računa">
+            <Scanner onScan={onScan} />
+          </section>
+        )}
+        {scanFailure && <ScanFailure messages={scanFailure} />}
+        <ScanNotes notes={notes} />
+      </div>
+
       <fieldset>
         <legend>Osnovno</legend>
         {text('title', 'Naziv', {
@@ -487,7 +539,7 @@ function Editor(props: {
   );
 }
 
-export function BillEditor({ id }: { id: string | null }) {
+export function BillEditor({ id, qr }: { id: string | null; qr?: string }) {
   const data = useLive(
     async (r) => ({
       sections: await r.listSections(),
@@ -508,8 +560,9 @@ export function BillEditor({ id }: { id: string | null }) {
     <section>
       <h1>{data.bill ? data.bill.title : 'Novi račun'}</h1>
       <Editor
-        key={id ?? 'new'}
+        key={id ?? `new:${qr ?? ''}`}
         {...(data.bill ? { bill: data.bill } : {})}
+        {...(qr !== undefined && id === null ? { qr } : {})}
         sections={data.sections}
         profiles={data.profiles}
       />

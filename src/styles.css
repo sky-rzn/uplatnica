@@ -781,25 +781,68 @@ button.tl-block:focus-visible {
   justify-self: center;
 }
 
-.qr-box dl {
+.qr-fields {
   margin: 0;
   display: grid;
   gap: 0.25rem;
 }
 
-.qr-box dl > div {
+.qr-fields > div {
   display: grid;
   grid-template-columns: 8rem 1fr;
   gap: 0.5rem;
 }
 
-.qr-box dt {
+.qr-fields dt {
   color: var(--muted);
 }
 
-.qr-box dd {
+.qr-fields dd {
   margin: 0;
   overflow-wrap: anywhere;
+}
+
+.scanner,
+.scan-view,
+.scan-fill {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+}
+
+.scanner > *,
+.scan-fill > * {
+  max-width: 100%;
+}
+
+.camera video {
+  display: block;
+  width: min(32rem, 100%);
+  border-radius: 8px;
+  background: #000;
+}
+
+.card.scan-found {
+  flex-direction: column;
+  align-items: start;
+}
+
+.scan-match h2 {
+  margin-bottom: 0.25rem;
+}
+
+.scan-periods {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+ul.scan-notes {
+  margin: 0;
+  padding-left: 1.25rem;
 }
 
 @font-face {

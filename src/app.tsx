@@ -10,6 +10,7 @@ import { ProfilesView } from './ui/profiles/ProfilesView';
 import { href, useRoute, type Route } from './ui/router';
 import { SectionsView } from './ui/sections/SectionsView';
 import { TimelineView } from './ui/timeline/TimelineView';
+import { ScanView } from './ui/scanner/ScanView';
 import { PrintView } from './ui/uplatnica/PrintView';
 import { plural } from './ui/period-text';
 
@@ -30,7 +31,12 @@ function Page({ route }: { route: Route }) {
     case 'bills':
       return <BillsView />;
     case 'bill':
-      return <BillEditor id={route.id} />;
+      return (
+        <BillEditor
+          id={route.id}
+          {...(route.qr !== undefined ? { qr: route.qr } : {})}
+        />
+      );
     case 'sections':
       return <SectionsView />;
     case 'profiles':
@@ -39,6 +45,8 @@ function Page({ route }: { route: Route }) {
       return <PrintView items={route.items} />;
     case 'data':
       return <DataView />;
+    case 'scan':
+      return <ScanView />;
   }
 }
 
@@ -63,7 +71,7 @@ export function App({ repo }: { repo: Repo }) {
   const current =
     route.name === 'bill'
       ? 'bills'
-      : route.name === 'list' || route.name === 'print'
+      : route.name === 'list' || route.name === 'print' || route.name === 'scan'
         ? 'timeline'
         : route.name;
   return (
