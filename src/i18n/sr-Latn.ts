@@ -362,6 +362,40 @@ export const srLatn = {
     },
   },
 
+  sync: {
+    title: 'Sinhronizacija',
+    lead: 'Uređaji razmenjuju podatke preko QR koda na ekranu, bez interneta i servera. Jedan pokazuje kod, drugi ga čita kamerom, a zatim obrnuto, da bi i prvi dobio izmene.',
+    dataHint:
+      'Telefon i računar razmenjuju izmene preko QR koda na ekranu. Podaci ne idu ni na jedan server.',
+    open: 'Sinhronizuj sa drugim uređajem',
+    deviceName: 'Naziv ovog uređaja',
+    deviceNameHint: 'Pod ovim nazivom ga vide drugi uređaji.',
+    show: 'Pokaži kod',
+    scan: 'Pročitaj kod',
+    stop: 'Zaustavi kameru',
+    noCamera: 'Kamera nije dostupna, pa ovaj uređaj može samo da pokazuje kod.',
+    target: 'Za uređaj',
+    newDevice: 'Novi uređaj (svi podaci)',
+    peer: (name: string, date: string) => `${name}, poslednji put ${date}`,
+    qrLabel: 'Animirani QR kod za sinhronizaciju',
+    frames: (n: number) =>
+      n === 1
+        ? 'Na drugom uređaju otvorite Sinhronizaciju, izaberite „Pročitaj kod“ i uperite kameru u ovaj kod.'
+        : `Kod ima ${String(n)} delova koji se smenjuju sami. Na drugom uređaju otvorite Sinhronizaciju, izaberite „Pročitaj kod“ i držite kameru uperenu u ekran dok se ne učita. Propušteni delovi se nadoknađuju.`,
+    waiting: 'Uperite kameru u kod na drugom uređaju.',
+    received: (got: number, total: number) =>
+      `Primljeno delova: ${String(got)} od ${String(total)}.`,
+    foreign: 'Ovo nije kod za sinhronizaciju.',
+    own: 'Ovo je kod sa ovog istog uređaja.',
+    newer:
+      'Kod je napravila novija verzija aplikacije. Osvežite stranicu na ovom uređaju.',
+    invalid: 'Podaci u kodu nisu prošli proveru.',
+    done: (name: string, added: number, updated: number, deleted: number) =>
+      `Sinhronizovano sa „${name}“. Novih zapisa: ${String(added)}, izmenjenih: ${String(updated)}, obrisanih: ${String(deleted)}.`,
+    replyHint: (name: string) =>
+      `Da bi „${name}“ dobio izmene sa ovog uređaja, pokažite mu odgovor.`,
+    reply: 'Pokaži odgovor',
+  },
   scan: {
     lead: 'Skenirajte IPS QR kod sa računa. Iznos i poziv na broj upisuju se u period računa, a za novog primaoca pravi se novi račun.',
     again: 'Skeniraj drugi kod',

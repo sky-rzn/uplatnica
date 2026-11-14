@@ -373,6 +373,40 @@ export const en: Messages = {
     },
   },
 
+  sync: {
+    title: 'Sync',
+    lead: 'Devices exchange data through a QR code on the screen, with no internet or server. One shows the code and the other reads it with its camera, then the other way round so that the first gets the changes too.',
+    dataHint:
+      'A phone and a computer exchange changes through a QR code on the screen. The data goes to no server.',
+    open: 'Sync with another device',
+    deviceName: 'Name of this device',
+    deviceNameHint: 'Other devices see it under this name.',
+    show: 'Show code',
+    scan: 'Read code',
+    stop: 'Stop camera',
+    noCamera: 'No camera is available, so this device can only show the code.',
+    target: 'For device',
+    newDevice: 'New device (all data)',
+    peer: (name: string, date: string) => `${name}, last synced ${date}`,
+    qrLabel: 'Animated QR code for syncing',
+    frames: (n: number) =>
+      n === 1
+        ? 'On the other device open Sync, choose “Read code” and point the camera at this code.'
+        : `The code has ${String(n)} parts that change by themselves. On the other device open Sync, choose “Read code” and keep the camera on the screen until it loads. Missed parts are made up for.`,
+    waiting: 'Point the camera at the code on the other device.',
+    received: (got: number, total: number) =>
+      `Parts received: ${String(got)} of ${String(total)}.`,
+    foreign: 'This is not a sync code.',
+    own: 'This code comes from this same device.',
+    newer:
+      'The code was made by a newer version of the app. Reload the page on this device.',
+    invalid: 'The data in the code failed the checks.',
+    done: (name: string, added: number, updated: number, deleted: number) =>
+      `Synced with “${name}”. New records: ${String(added)}, changed: ${String(updated)}, deleted: ${String(deleted)}.`,
+    replyHint: (name: string) =>
+      `For “${name}” to get the changes from this device, show it the reply.`,
+    reply: 'Show reply',
+  },
   scan: {
     lead: 'Scan the IPS QR code on a bill. The amount and reference go into the bill’s period, and a new payee gets a new bill.',
     again: 'Scan another code',

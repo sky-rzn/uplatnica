@@ -9,9 +9,13 @@ export interface QrMatrix {
   dark: (row: number, col: number) => boolean;
 }
 
-export function qrMatrix(text: string, ecc: 'M' | 'L'): QrMatrix {
+export function qrMatrix(
+  text: string,
+  ecc: 'M' | 'L',
+  maxVersion = QR_MAX_VERSION,
+): QrMatrix {
   const qr = QRCode.create(text, { errorCorrectionLevel: ecc });
-  if (qr.version > QR_MAX_VERSION)
+  if (qr.version > maxVersion)
     throw new RangeError(`QR version ${String(qr.version)} is too large`);
   const { size, data } = qr.modules;
   return {

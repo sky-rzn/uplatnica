@@ -958,6 +958,15 @@ ul.scan-notes {
   }
 }
 
+.sync-view > .card {
+  display: grid;
+  margin: 0.75rem 0;
+}
+
+.sync-qr .qr {
+  width: min(24rem, 100%);
+}
+
 .data-view > .card {
   display: grid;
   align-items: stretch;

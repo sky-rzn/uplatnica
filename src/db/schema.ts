@@ -1,5 +1,6 @@
 import Dexie, { type Table } from 'dexie';
 import type { Bill, Occurrence, Profile, Section } from '../core/model';
+import type { Device } from '../io/sync';
 
 export const DB_NAME = 'uplatnica';
 
@@ -15,6 +16,29 @@ export interface Tombstone {
   table: TableName;
   key: string;
   deletedAt: string;
+}
+
+/** When this device last wrote or deleted a record, by its own clock. */
+export interface Change {
+  table: TableName;
+  key: string;
+  at: string;
+}
+
+/** Another device this one has synced with. */
+export interface Peer {
+  id: string;
+  name: string;
+  /** exportedAt of the last message from the peer merged here. */
+  received?: string;
+  /** exportedAt of the last message from here the peer has merged. */
+  acked?: string;
+  syncedAt: string;
+}
+
+export interface Meta {
+  key: 'device';
+  value: Device;
 }
 
 export interface Dataset {
@@ -33,6 +57,9 @@ export class UplatnicaDb extends Dexie {
   declare bills: Table<Stored<Bill>, string>;
   declare occurrences: Table<Stored<Occurrence>, OccurrenceKey>;
   declare tombstones: Table<Tombstone, [TableName, string]>;
+  declare changes: Table<Change, [TableName, string]>;
+  declare peers: Table<Peer, string>;
+  declare meta: Table<Meta, string>;
 
   constructor(name: string = DB_NAME) {
     super(name);
@@ -43,5 +70,10 @@ export class UplatnicaDb extends Dexie {
       occurrences: '[billId+periodKey], billId',
     });
     this.version(2).stores({ tombstones: '[table+key]' });
+    this.version(3).stores({
+      changes: '[table+key], at',
+      peers: 'id',
+      meta: 'key',
+    });
   }
 }

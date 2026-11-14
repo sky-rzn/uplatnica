@@ -6,7 +6,7 @@ import {
   sectionBackup,
 } from '../../../src/io/export';
 import { parseBackup } from '../../../src/io/import';
-import { mergeDatasets } from '../../../src/io/merge';
+import { mergeDatasets, occurrenceKey } from '../../../src/io/merge';
 import { T0, dataset } from './fixtures';
 
 const NOW = new Date('2026-11-13T10:00:00Z');
@@ -33,7 +33,7 @@ describe('parseBackup', () => {
     expect(parseBackup(backupJson(backup))).toEqual({ ok: true, backup });
   });
 
-  it('reads back the changes since a moment with what they refer to', () => {
+  it('reads back the picked changes with what they refer to', () => {
     const data = dataset();
     const [, occ] = data.occurrences;
     if (!occ) throw new Error('fixture');
@@ -42,7 +42,13 @@ describe('parseBackup', () => {
       { table: 'bills', key: 'old', deletedAt: '2026-10-01T10:00:00.000Z' },
       { table: 'bills', key: 'b9', deletedAt: '2026-11-10T10:00:00.000Z' },
     ];
-    const backup = changesBackup(data, new Date('2026-11-10T10:00:00Z'), NOW);
+    const backup = changesBackup(
+      data,
+      (table, key) =>
+        (table === 'occurrences' && key === occurrenceKey(occ)) ||
+        (table === 'bills' && key === 'b9'),
+      NOW,
+    );
     expect(backup).toMatchObject({
       partial: true,
       profiles: data.profiles,
@@ -52,7 +58,7 @@ describe('parseBackup', () => {
       tombstones: [data.tombstones[1]],
     });
     expect(parseBackup(backupJson(backup))).toEqual({ ok: true, backup });
-    expect(changesBackup(data, NOW, NOW).bills).toEqual([]);
+    expect(changesBackup(data, () => false, NOW).bills).toEqual([]);
   });
 
   it('rejects what is not a backup', () => {

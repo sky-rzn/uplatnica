@@ -1,7 +1,12 @@
 import 'fake-indexeddb/auto';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Profile, Section } from '../../../src/core/model';
-import { IntegrityError, Repo, newId } from '../../../src/db/repo';
+import {
+  IntegrityError,
+  OwnMessageError,
+  Repo,
+  newId,
+} from '../../../src/db/repo';
 import { UplatnicaDb } from '../../../src/db/schema';
 import { bill } from '../core/fixtures';
 import { T0, dataset } from '../io/fixtures';
@@ -242,5 +247,91 @@ describe('Repo', () => {
     } finally {
       await other.db.delete();
     }
+  });
+});
+
+describe('Repo sync', () => {
+  const repos: Repo[] = [];
+  const device = async (name: string) => {
+    const r = new Repo(new UplatnicaDb(`test-${newId()}`), () => clock);
+    repos.push(r);
+    await r.device(name);
+    return r;
+  };
+  const tick = () => {
+    clock = new Date(clock.getTime() + 60_000);
+  };
+
+  afterEach(async () => {
+    await Promise.all(repos.splice(0).map((r) => r.db.delete()));
+  });
+
+  it('sends everything first and only the changes once acknowledged', async () => {
+    const a = await device('A');
+    const b = await device('B');
+    await a.replaceAll(dataset());
+    await a.device('A');
+    const first = await a.outgoing(null);
+    expect(first.backup.partial).toBeUndefined();
+    tick();
+    const { peer } = await b.acceptSync(first);
+    expect(peer).toMatchObject({
+      name: 'A',
+      received: first.backup.exportedAt,
+    });
+
+    tick();
+    const reply = await b.outgoing(peer.id);
+    expect(reply.ack).toBe(first.backup.exportedAt);
+    tick();
+    await a.acceptSync(reply);
+
+    tick();
+    await a.saveOccurrence({ billId: 'b1', periodKey: '2026-11', amount: 9 });
+    await a.deleteOccurrence('b1', '2026-09');
+    const [bPeer] = await a.listPeers();
+    const delta = await a.outgoing(bPeer?.id ?? null);
+    expect(delta.backup.partial).toBe(true);
+    expect(delta.backup.occurrences.map((o) => o.periodKey)).toEqual([
+      '2026-11',
+    ]);
+    expect(delta.backup.tombstones.map((t) => t.key)).toEqual([
+      '["b1","2026-09"]',
+    ]);
+    tick();
+    await b.acceptSync(delta);
+    expect((await b.dump()).occurrences).toEqual((await a.dump()).occurrences);
+  });
+
+  it('passes on records merged from a third device', async () => {
+    const a = await device('A');
+    const b = await device('B');
+    const c = await device('C');
+    await a.replaceAll(dataset());
+    await a.device('A');
+    await b.acceptSync(await a.outgoing(null));
+    await a.acceptSync(await b.outgoing((await a.device()).id));
+
+    await c.replaceAll(dataset());
+    await c.device('C');
+    await c.saveOccurrence({ billId: 'b1', periodKey: '2026-12', amount: 1 });
+    tick();
+    await a.acceptSync(await c.outgoing(null));
+
+    const bId = (await b.device()).id;
+    const delta = await a.outgoing(bId);
+    expect(delta.backup.occurrences.map((o) => o.periodKey)).toEqual([
+      '2026-12',
+    ]);
+  });
+
+  it('refuses its own message and starts over after replacing all', async () => {
+    const a = await device('A');
+    const before = await a.device();
+    await expect(a.acceptSync(await a.outgoing(null))).rejects.toThrow(
+      OwnMessageError,
+    );
+    await a.replaceAll(dataset());
+    expect((await a.device('A')).id).not.toBe(before.id);
   });
 });

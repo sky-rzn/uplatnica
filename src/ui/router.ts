@@ -13,6 +13,7 @@ export type Route =
   | { name: 'sections' }
   | { name: 'profiles' }
   | { name: 'data' }
+  | { name: 'sync' }
   | { name: 'settings' }
   | { name: 'scan' }
   | { name: 'print'; items: PeriodRef[] };
@@ -30,6 +31,8 @@ export function parseRoute(hash: string): Route {
       return { name: 'profiles' };
     case 'data':
       return { name: 'data' };
+    case 'sync':
+      return { name: 'sync' };
     case 'settings':
       return { name: 'settings' };
     case 'scan':

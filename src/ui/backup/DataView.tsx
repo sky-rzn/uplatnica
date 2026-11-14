@@ -15,6 +15,7 @@ import { useLive, useRepo } from '../data';
 import { download, fileSlug } from '../download';
 import { formatDate } from '../format';
 import { importIssueText } from '../messages';
+import { href } from '../router';
 import { t } from '../../i18n';
 
 const SHOWN_ISSUES = 20;
@@ -225,6 +226,16 @@ export function DataView() {
           </div>
         </section>
       )}
+
+      <section class="card" aria-labelledby="sync-title">
+        <h2 id="sync-title">{t.sync.title}</h2>
+        <p class="hint">{t.sync.dataHint}</p>
+        <div class="actions">
+          <a class="button" href={href({ name: 'sync' })}>
+            {t.sync.open}
+          </a>
+        </div>
+      </section>
 
       <ImportCard />
 

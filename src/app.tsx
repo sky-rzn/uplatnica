@@ -14,6 +14,7 @@ import { SectionsView } from './ui/sections/SectionsView';
 import { SettingsView } from './ui/settings/SettingsView';
 import { TimelineView } from './ui/timeline/TimelineView';
 import { ScanView } from './ui/scanner/ScanView';
+import { SyncView } from './ui/sync/SyncView';
 import { PrintView } from './ui/uplatnica/PrintView';
 
 const NAV = [
@@ -48,6 +49,8 @@ function Page({ route }: { route: Route }) {
       return <PrintView items={route.items} />;
     case 'data':
       return <DataView />;
+    case 'sync':
+      return <SyncView />;
     case 'settings':
       return <SettingsView />;
     case 'scan':
@@ -74,9 +77,13 @@ function Shell() {
   const current =
     route.name === 'bill'
       ? 'bills'
-      : route.name === 'list' || route.name === 'print' || route.name === 'scan'
-        ? 'timeline'
-        : route.name;
+      : route.name === 'sync'
+        ? 'data'
+        : route.name === 'list' ||
+            route.name === 'print' ||
+            route.name === 'scan'
+          ? 'timeline'
+          : route.name;
   return (
     <>
       <header class="top">

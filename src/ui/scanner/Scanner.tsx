@@ -13,8 +13,9 @@ function cameraError(e: unknown): string {
   return t.scanner.cameraFailed;
 }
 
-function Camera(props: {
-  onScan: (text: string) => void;
+/** Reads codes for as long as onScan() returns true. */
+export function Camera(props: {
+  onScan: (text: string) => boolean;
   onError: (message: string) => void;
 }) {
   const video = useRef<HTMLVideoElement>(null);
@@ -54,10 +55,7 @@ function Camera(props: {
         placeFinder(v);
         const text = await scanFrame(v, frame++).catch(() => null);
         if (isStopped()) return;
-        if (text !== null) {
-          handlers.current.onScan(text);
-          return;
-        }
+        if (text !== null && !handlers.current.onScan(text)) return;
       }
       timer = setTimeout(() => void tick(), FRAME_MS);
     };
@@ -142,7 +140,10 @@ export function Scanner(props: { onScan: (text: string) => void }) {
     <div class="scanner">
       {camera && (
         <Camera
-          onScan={found}
+          onScan={(text) => {
+            found(text);
+            return false;
+          }}
           onError={(message) => {
             setCamera(false);
             setError(message);

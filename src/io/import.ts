@@ -35,6 +35,11 @@ export function parseBackup(text: string): ParseBackupResult {
   } catch {
     return { ok: false, issues: [{ code: 'not-json' }] };
   }
+  return readBackup(raw);
+}
+
+/** Checks parsed JSON the way parseBackup() checks a file. */
+export function readBackup(raw: unknown): ParseBackupResult {
   const migrated = migrate(raw);
   if (!migrated.ok)
     return {

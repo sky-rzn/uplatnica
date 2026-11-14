@@ -1,4 +1,5 @@
-import type { Dataset } from '../db/schema';
+import type { Dataset, TableName } from '../db/schema';
+import { occurrenceKey } from './merge';
 import { BACKUP_APP, SCHEMA_VERSION } from './migrate';
 
 export interface Backup extends Dataset {
@@ -63,15 +64,20 @@ export function sectionBackup(
 }
 
 /**
- * Records changed or deleted at or after since, with the bills, sections and
- * payers they refer to, so that the result merges on its own.
+ * The records and deletions changed(table, key) picks, with the bills,
+ * sections and payers they refer to, so that the result merges on its own.
  */
-export function changesBackup(data: Dataset, since: Date, now: Date): Backup {
-  const changed = (iso: string) => Date.parse(iso) >= since.getTime();
-  const occurrences = data.occurrences.filter((o) => changed(o.updatedAt));
+export function changesBackup(
+  data: Dataset,
+  changed: (table: TableName, key: string) => boolean,
+  now: Date,
+): Backup {
+  const occurrences = data.occurrences.filter((o) =>
+    changed('occurrences', occurrenceKey(o)),
+  );
   const billIds = new Set(occurrences.map((o) => o.billId));
   const bills = data.bills.filter(
-    (b) => billIds.has(b.id) || changed(b.updatedAt),
+    (b) => billIds.has(b.id) || changed('bills', b.id),
   );
   const sectionIds = new Set(bills.map((b) => b.sectionId));
   const profileIds = new Set(bills.map((b) => b.profileId));
@@ -81,14 +87,14 @@ export function changesBackup(data: Dataset, since: Date, now: Date): Backup {
     exportedAt: now.toISOString(),
     partial: true,
     profiles: data.profiles.filter(
-      (p) => profileIds.has(p.id) || changed(p.updatedAt),
+      (p) => profileIds.has(p.id) || changed('profiles', p.id),
     ),
     sections: data.sections.filter(
-      (s) => sectionIds.has(s.id) || changed(s.updatedAt),
+      (s) => sectionIds.has(s.id) || changed('sections', s.id),
     ),
     bills,
     occurrences,
-    tombstones: data.tombstones.filter((t) => changed(t.deletedAt)),
+    tombstones: data.tombstones.filter((t) => changed(t.table, t.key)),
   };
 }
 

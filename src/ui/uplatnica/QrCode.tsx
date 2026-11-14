@@ -2,8 +2,13 @@ import { qrMatrix, qrPath } from '../../core/uplatnica/qr';
 
 const QUIET = 4;
 
-export function QrCode(props: { text: string; ecc: 'M' | 'L'; label: string }) {
-  const m = qrMatrix(props.text, props.ecc);
+export function QrCode(props: {
+  text: string;
+  ecc: 'M' | 'L';
+  label: string;
+  maxVersion?: number;
+}) {
+  const m = qrMatrix(props.text, props.ecc, props.maxVersion);
   const side = m.size + 2 * QUIET;
   return (
     <svg
