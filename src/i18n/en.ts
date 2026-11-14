@@ -392,7 +392,7 @@ export const en: Messages = {
     cameraMissing: 'No camera found. Load a picture of the bill.',
     cameraFailed: 'The camera could not start. Load a picture of the bill.',
     video: 'Camera picture',
-    aim: 'Point the camera at the QR code on the bill.',
+    aim: 'Point the camera so the QR code is inside the frame.',
     noQrPdf:
       'No QR code found in the PDF. If the code is drawn rather than embedded as a picture, take a screenshot and load that.',
     noQrImage:

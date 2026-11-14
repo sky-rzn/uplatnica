@@ -381,7 +381,7 @@ export const srLatn = {
     cameraMissing: 'Kamera nije pronađena. Učitajte sliku računa.',
     cameraFailed: 'Kamera nije mogla da se pokrene. Učitajte sliku računa.',
     video: 'Slika sa kamere',
-    aim: 'Usmerite kameru na QR kod na računu.',
+    aim: 'Usmerite kameru tako da QR kod bude unutar okvira.',
     noQrPdf:
       'U PDF-u nije pronađen QR kod. Ako je kod nacrtan, a ne umetnut kao slika, napravite snimak ekrana i učitajte njega.',
     noQrImage:

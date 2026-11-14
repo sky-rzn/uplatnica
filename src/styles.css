@@ -822,6 +822,25 @@ button.tl-block:focus-visible {
   background: #000;
 }
 
+.camera .viewport {
+  position: relative;
+  width: min(32rem, 100%);
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.camera .viewport video {
+  width: 100%;
+}
+
+.camera .finder {
+  position: absolute;
+  border: 2px solid #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 0 100vmax rgb(0 0 0 / 35%);
+  pointer-events: none;
+}
+
 .card.scan-found {
   flex-direction: column;
   align-items: start;

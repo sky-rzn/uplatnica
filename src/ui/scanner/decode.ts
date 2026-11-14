@@ -73,16 +73,23 @@ interface Rect {
 
 /**
  * Draws part of the image on a white canvas with a quiet zone around it,
- * so a code cropped to its modules, as in a PDF, still reads. Small images
- * are scaled up without smoothing, large ones down to maxSide.
+ * so a code cropped to its modules, as in a PDF, still reads. Images
+ * shorter than minSide are scaled up by up to three times without
+ * smoothing, staying within maxSide, larger ones down to maxSide.
  */
 export function drawPadded(
   source: CanvasImageSource,
   rect: Rect,
   maxSide: number,
+  minSide = 400,
 ): HTMLCanvasElement {
   const longest = Math.max(rect.w, rect.h);
-  const scale = longest > maxSide ? maxSide / longest : longest < 400 ? 3 : 1;
+  const scale =
+    longest > maxSide
+      ? maxSide / longest
+      : longest < minSide
+        ? Math.max(1, Math.min(3, Math.floor(maxSide / longest)))
+        : 1;
   const w = Math.round(rect.w * scale);
   const h = Math.round(rect.h * scale);
   const pad = Math.round(Math.max(w, h) * 0.08) + 8;
@@ -116,6 +123,37 @@ function regions(width: number, height: number): Rect[] {
 }
 
 const MAX_SIDE = 1600;
+
+/** The centred square the camera viewfinder marks, as a fraction of the shorter side. */
+export const VIEWFINDER = 0.6;
+
+export function centerSquare(width: number, height: number): Rect {
+  const side = Math.round(Math.min(width, height) * VIEWFINDER);
+  return {
+    x: Math.round((width - side) / 2),
+    y: Math.round((height - side) / 2),
+    w: side,
+    h: side,
+  };
+}
+
+/**
+ * Reads one camera frame, alternating between the whole frame and the
+ * viewfinder square scaled up, where a code that fills little of the frame
+ * still has modules large enough to decode.
+ */
+export function scanFrame(
+  video: HTMLVideoElement,
+  frame: number,
+): Promise<string | null> {
+  const width = video.videoWidth;
+  const height = video.videoHeight;
+  const rect =
+    frame % 2 === 0
+      ? { x: 0, y: 0, w: width, h: height }
+      : centerSquare(width, height);
+  return scanCanvas(drawPadded(video, rect, MAX_SIDE, 1200));
+}
 
 async function scanBitmap(bitmap: ImageBitmap): Promise<string | null> {
   let other: string | null = null;

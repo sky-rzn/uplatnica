@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { t } from '../../i18n';
-import { isPdf, scanCanvas, scanFile } from './decode';
+import { centerSquare, isPdf, scanFile, scanFrame } from './decode';
 
 const FRAME_MS = 250;
 
@@ -18,6 +18,7 @@ function Camera(props: {
   onError: (message: string) => void;
 }) {
   const video = useRef<HTMLVideoElement>(null);
+  const finder = useRef<HTMLDivElement>(null);
   const handlers = useRef(props);
   handlers.current = props;
 
@@ -31,16 +32,27 @@ function Camera(props: {
     let timer: ReturnType<typeof setTimeout> | undefined;
     let stopped = false;
     const isStopped = () => stopped;
-    const canvas = document.createElement('canvas');
+    let frame = 0;
+
+    const placeFinder = (v: HTMLVideoElement) => {
+      const box = finder.current;
+      if (!box) return;
+      const { videoWidth: w, videoHeight: h } = v;
+      const r = centerSquare(w, h);
+      const pct = (n: number, of: number) => String((100 * n) / of) + '%';
+      box.style.left = pct(r.x, w);
+      box.style.top = pct(r.y, h);
+      box.style.width = pct(r.w, w);
+      box.style.height = pct(r.h, h);
+      box.hidden = false;
+    };
 
     const tick = async () => {
       const v = video.current;
       if (isStopped() || !v) return;
-      if (v.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
-        canvas.width = v.videoWidth;
-        canvas.height = v.videoHeight;
-        canvas.getContext('2d')?.drawImage(v, 0, 0);
-        const text = await scanCanvas(canvas).catch(() => null);
+      if (v.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && v.videoWidth) {
+        placeFinder(v);
+        const text = await scanFrame(v, frame++).catch(() => null);
         if (isStopped()) return;
         if (text !== null) {
           handlers.current.onScan(text);
@@ -53,13 +65,23 @@ function Camera(props: {
     void (async () => {
       try {
         stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: 'environment' } },
+          video: {
+            facingMode: { ideal: 'environment' },
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+          },
           audio: false,
         });
         if (isStopped() || !video.current) {
           release();
           return;
         }
+        const [track] = stream.getVideoTracks();
+        await track
+          ?.applyConstraints({
+            advanced: [{ focusMode: 'continuous' } as MediaTrackConstraintSet],
+          })
+          .catch(() => undefined);
         video.current.srcObject = stream;
         await video.current.play();
         void tick();
@@ -77,7 +99,10 @@ function Camera(props: {
 
   return (
     <div class="camera">
-      <video ref={video} muted playsInline aria-label={t.scanner.video} />
+      <div class="viewport">
+        <video ref={video} muted playsInline aria-label={t.scanner.video} />
+        <div ref={finder} class="finder" hidden />
+      </div>
       <p class="hint">{t.scanner.aim}</p>
     </div>
   );
