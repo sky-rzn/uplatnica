@@ -102,6 +102,8 @@ export const srLatn = {
     scanBill: 'Skeniraj račun',
     scanning: 'Skeniranje računa',
     newBill: 'Novi račun',
+    up: (name: string) => `Pomeri „${name}“ gore`,
+    down: (name: string) => `Pomeri „${name}“ dole`,
     due: (date: string) => `rok ${date}`,
   },
 
@@ -316,8 +318,6 @@ export const srLatn = {
     confirmDelete: (name: string) => `Obrisati odeljak „${name}“?`,
     inUse: (name: string) =>
       `U odeljku „${name}“ ima računa. Premestite ih ili obrišite, ili arhivirajte odeljak.`,
-    up: (name: string) => `Pomeri „${name}“ gore`,
-    down: (name: string) => `Pomeri „${name}“ dole`,
   },
 
   profiles: {

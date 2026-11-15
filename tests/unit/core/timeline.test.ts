@@ -194,6 +194,12 @@ describe('timelineGroups', () => {
     ]);
   });
 
+  it('puts ordered bills first', () => {
+    const ordered = bills.map((b) => (b.id === 'b1' ? { ...b, order: 0 } : b));
+    const [first] = timelineGroups(sections, ordered, [], range, '2026-11-13');
+    expect(first?.rows.map((r) => r.bill.id)).toEqual(['b1', 'b2']);
+  });
+
   it('filters by section, payer and unpaid periods', () => {
     const ids = (filter: Parameters<typeof timelineGroups>[5]) =>
       timelineGroups(sections, bills, [], range, '2026-11-13', filter).flatMap(

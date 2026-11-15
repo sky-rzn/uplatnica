@@ -6,7 +6,12 @@ import {
   parseIsoDate,
   type IsoDate,
 } from './date';
-import type { Bill, Occurrence, Section } from './model';
+import {
+  compareBills,
+  type Bill,
+  type Occurrence,
+  type Section,
+} from './model';
 import type { Para } from './money';
 import { resolveOccurrences, type ResolvedOccurrence } from './schedule';
 import { computeStatus, effectiveAmount, type Status } from './status';
@@ -186,7 +191,7 @@ export interface SectionGroup {
   rows: BillRow[];
 }
 
-/** Active bills by section, in section order and then by title. */
+/** Active bills by section, in section order and then in bill order. */
 export function timelineGroups(
   sections: readonly Section[],
   bills: readonly Bill[],
@@ -218,7 +223,7 @@ export function timelineGroups(
             (filter.profileId === undefined ||
               b.profileId === filter.profileId),
         )
-        .sort((a, b) => a.title.localeCompare(b.title))
+        .sort(compareBills)
         .map((b) => billRow(b, byBill.get(b.id) ?? [], range, today))
         .filter(
           (row) =>

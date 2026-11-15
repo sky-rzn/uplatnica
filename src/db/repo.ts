@@ -172,9 +172,37 @@ export class Repo {
           throw new IntegrityError(`section ${bill.sectionId} does not exist`);
         if (!(await db.profiles.get(bill.profileId)))
           throw new IntegrityError(`profile ${bill.profileId} does not exist`);
-        return this.put('bills', bill.id, (b) => db.bills.put(b), bill);
+        return this.put('bills', bill.id, (b) => db.bills.put(b), {
+          ...bill,
+          order: bill.order ?? (await this.billOrder(bill)),
+        });
       },
     );
+  }
+
+  /** Keeps the stored position, or puts a bill new to its section last. */
+  private async billOrder(bill: Bill): Promise<number> {
+    const { db } = this;
+    const stored = await db.bills.get(bill.id);
+    if (stored?.sectionId === bill.sectionId && stored.order !== undefined)
+      return stored.order;
+    const own = await db.bills
+      .where('sectionId')
+      .equals(bill.sectionId)
+      .toArray();
+    return Math.max(-1, ...own.map((b) => b.order ?? -1)) + 1;
+  }
+
+  /** Sets order to each bill's position in ids. */
+  reorderBills(ids: readonly string[]): Promise<void> {
+    const { db } = this;
+    return db.transaction('rw', db.bills, db.changes, async () => {
+      const bills = (await db.bills.bulkGet([...ids])).flatMap((b, i) =>
+        b && b.order !== i ? [this.stamp({ ...b, order: i })] : [],
+      );
+      await db.bills.bulkPut(bills);
+      await this.log(bills.map((b) => ({ table: 'bills', key: b.id })));
+    });
   }
 
   deleteBill(id: string): Promise<void> {

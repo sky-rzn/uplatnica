@@ -77,6 +77,7 @@ const bill = z.strictObject({
   schedule,
   graceDays: z.optional(z.int().check(z.gte(0))),
   notes: z.optional(text),
+  order: z.optional(z.int()),
   archived: z.boolean(),
   updatedAt,
 });

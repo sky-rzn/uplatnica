@@ -109,6 +109,8 @@ export const en: Messages = {
     scanBill: 'Scan a bill',
     scanning: 'Scanning a bill',
     newBill: 'New bill',
+    up: (name: string) => `Move “${name}” up`,
+    down: (name: string) => `Move “${name}” down`,
     due: (date: string) => `due ${date}`,
   },
 
@@ -326,8 +328,6 @@ export const en: Messages = {
     confirmDelete: (name: string) => `Delete the section “${name}”?`,
     inUse: (name: string) =>
       `The section “${name}” has bills. Move or delete them, or archive the section.`,
-    up: (name: string) => `Move “${name}” up`,
-    down: (name: string) => `Move “${name}” down`,
   },
 
   profiles: {

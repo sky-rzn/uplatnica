@@ -24,7 +24,7 @@ describe('migrate', () => {
   it('gives version 1 backups an empty list of deletions', () => {
     expect(migrate({ app: 'uplatnica', schemaVersion: 1 })).toEqual({
       ok: true,
-      data: { app: 'uplatnica', schemaVersion: 2, tombstones: [] },
+      data: { app: 'uplatnica', schemaVersion: 3, tombstones: [] },
     });
   });
 

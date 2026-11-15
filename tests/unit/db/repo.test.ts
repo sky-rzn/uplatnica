@@ -75,6 +75,33 @@ describe('Repo', () => {
     ]);
   });
 
+  it('puts a bill last in its section and keeps its place on save', async () => {
+    await repo.saveSection({ ...section, id: 's2', order: 1 });
+    await repo.saveBill(monthly);
+    await repo.saveBill({ ...monthly, id: 'b2' });
+    await repo.saveBill({ ...monthly, id: 'b3', sectionId: 's2' });
+    await repo.saveBill({ ...monthly, title: 'Infostan' });
+    await repo.saveBill({ ...monthly, id: 'b2', sectionId: 's2' });
+    const orders = (await repo.listBills()).map((b) => [b.id, b.order]);
+    expect(orders).toEqual([
+      ['b1', 0],
+      ['b2', 1],
+      ['b3', 0],
+    ]);
+  });
+
+  it('renumbers bills in the given order', async () => {
+    await repo.saveBill(monthly);
+    await repo.saveBill({ ...monthly, id: 'b2' });
+    clock = new Date('2026-11-14T08:00:00Z');
+    await repo.reorderBills(['b2', 'b1']);
+    const listed = await repo.listBills();
+    expect(listed.map((b) => [b.id, b.order, b.updatedAt])).toEqual([
+      ['b1', 1, '2026-11-14T08:00:00.000Z'],
+      ['b2', 0, '2026-11-14T08:00:00.000Z'],
+    ]);
+  });
+
   it('filters bills by section', async () => {
     await repo.saveSection({ ...section, id: 's2', order: 1 });
     await repo.saveBill(monthly);

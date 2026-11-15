@@ -103,6 +103,8 @@ export const ru: Messages = {
     scanBill: 'Сканировать счёт',
     scanning: 'Сканирование счёта',
     newBill: 'Новый счёт',
+    up: (name: string) => `Переместить «${name}» выше`,
+    down: (name: string) => `Переместить «${name}» ниже`,
     due: (date: string) => `срок ${date}`,
   },
 
@@ -317,8 +319,6 @@ export const ru: Messages = {
     confirmDelete: (name: string) => `Удалить раздел «${name}»?`,
     inUse: (name: string) =>
       `В разделе «${name}» есть счета. Перенесите или удалите их либо отправьте раздел в архив.`,
-    up: (name: string) => `Переместить «${name}» выше`,
-    down: (name: string) => `Переместить «${name}» ниже`,
   },
 
   profiles: {

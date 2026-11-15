@@ -103,6 +103,8 @@ export const srCyrl: Messages = {
     scanBill: 'Скенирај рачун',
     scanning: 'Скенирање рачуна',
     newBill: 'Нови рачун',
+    up: (name: string) => `Помери „${name}“ горе`,
+    down: (name: string) => `Помери „${name}“ доле`,
     due: (date: string) => `рок ${date}`,
   },
 
@@ -317,8 +319,6 @@ export const srCyrl: Messages = {
     confirmDelete: (name: string) => `Обрисати одељак „${name}“?`,
     inUse: (name: string) =>
       `У одељку „${name}“ има рачуна. Преместите их или обришите, или архивирајте одељак.`,
-    up: (name: string) => `Помери „${name}“ горе`,
-    down: (name: string) => `Помери „${name}“ доле`,
   },
 
   profiles: {

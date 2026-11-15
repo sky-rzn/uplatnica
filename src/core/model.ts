@@ -58,7 +58,17 @@ export interface Bill {
   schedule: Schedule;
   graceDays?: number;
   notes?: string;
+  /** Position within the section; bills without one go last. */
+  order?: number;
   archived: boolean;
+}
+
+/** Section order of bills: by order, then by title. */
+export function compareBills(a: Bill, b: Bill): number {
+  return (
+    (a.order ?? Infinity) - (b.order ?? Infinity) ||
+    a.title.localeCompare(b.title)
+  );
 }
 
 export interface Occurrence {

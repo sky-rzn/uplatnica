@@ -1,16 +1,22 @@
 import { todayIso } from '../../core/date';
-import type { Bill } from '../../core/model';
+import { compareBills, type Bill } from '../../core/model';
 import { formatAmount } from '../../core/money';
 import { upcomingPeriods } from '../../core/schedule';
 import { formatAccountShort } from '../../core/serbia/account';
 import { t } from '../../i18n';
-import { useLive } from '../data';
+import { useLive, useRepo } from '../data';
 import { SetupNotice } from '../SetupNotice';
 import { formatDate } from '../format';
 import { href } from '../router';
 import { scheduleText } from '../schedule-text';
 
-function BillRow({ bill, today }: { bill: Bill; today: string }) {
+function BillRow(props: {
+  bill: Bill;
+  today: string;
+  onUp: (() => void) | undefined;
+  onDown: (() => void) | undefined;
+}) {
+  const { bill, today } = props;
   const [next] = upcomingPeriods(bill.schedule, today, 1);
   return (
     <li class={bill.archived ? 'card archived' : 'card'}>
@@ -31,11 +37,30 @@ function BillRow({ bill, today }: { bill: Bill; today: string }) {
           ? `${formatAmount(bill.amount)} RSD`
           : t.bills.variable}
       </div>
+      <div class="actions">
+        <button
+          type="button"
+          aria-label={t.common.up(bill.title)}
+          disabled={!props.onUp}
+          onClick={props.onUp}
+        >
+          ↑
+        </button>
+        <button
+          type="button"
+          aria-label={t.common.down(bill.title)}
+          disabled={!props.onDown}
+          onClick={props.onDown}
+        >
+          ↓
+        </button>
+      </div>
     </li>
   );
 }
 
 export function BillsView() {
+  const repo = useRepo();
   const data = useLive(async (r) => ({
     sections: await r.listSections(),
     profiles: await r.listProfiles(),
@@ -63,10 +88,14 @@ export function BillsView() {
           .filter((b) => b.sectionId === s.id)
           .sort(
             (a, b) =>
-              Number(a.archived) - Number(b.archived) ||
-              a.title.localeCompare(b.title),
+              Number(a.archived) - Number(b.archived) || compareBills(a, b),
           );
         if (own.length === 0) return null;
+        const swap = (i: number, j: number) => () => {
+          const ids = own.map((b) => b.id);
+          [ids[i], ids[j]] = [ids[j] ?? '', ids[i] ?? ''];
+          void repo.reorderBills(ids);
+        };
         return (
           <section key={s.id} class="group">
             <h2>
@@ -74,8 +103,14 @@ export function BillsView() {
               {s.name}
             </h2>
             <ul class="cards">
-              {own.map((b) => (
-                <BillRow key={b.id} bill={b} today={today} />
+              {own.map((b, i) => (
+                <BillRow
+                  key={b.id}
+                  bill={b}
+                  today={today}
+                  onUp={i > 0 ? swap(i, i - 1) : undefined}
+                  onDown={i < own.length - 1 ? swap(i, i + 1) : undefined}
+                />
               ))}
             </ul>
           </section>

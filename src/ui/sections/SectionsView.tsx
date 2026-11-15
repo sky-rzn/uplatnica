@@ -168,7 +168,7 @@ export function SectionsView() {
               <div class="actions">
                 <button
                   type="button"
-                  aria-label={t.sections.up(s.name)}
+                  aria-label={t.common.up(s.name)}
                   disabled={i === 0}
                   onClick={() => void swap(i, i - 1)}
                 >
@@ -176,7 +176,7 @@ export function SectionsView() {
                 </button>
                 <button
                   type="button"
-                  aria-label={t.sections.down(s.name)}
+                  aria-label={t.common.down(s.name)}
                   disabled={i === sections.length - 1}
                   onClick={() => void swap(i, i + 1)}
                 >
