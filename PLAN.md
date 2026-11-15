@@ -296,7 +296,6 @@ src/
     export.ts import.ts migrate.ts crypto.ts ics.ts csv.ts
   ui/
     timeline/           // диаграмма
-    list/               // мобильный список
     bill-editor/
     occurrence-panel/
     uplatnica/          // SVG-форма, печать, PDF

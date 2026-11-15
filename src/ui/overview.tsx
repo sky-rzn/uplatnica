@@ -35,7 +35,6 @@ function Summary(props: { totals: Record<AgendaGroup, AgendaTotal> }) {
 }
 
 export function OverviewHeader(props: {
-  view: 'timeline' | 'list';
   ready: boolean;
   totals: Record<AgendaGroup, AgendaTotal> | null;
 }) {
@@ -56,22 +55,6 @@ export function OverviewHeader(props: {
       </div>
       {props.totals && (
         <div class="overview-bar">
-          <div class="segmented" role="group" aria-label={t.overview.view}>
-            <a
-              class="button"
-              href={href({ name: 'timeline' })}
-              {...(props.view === 'timeline' ? { 'aria-current': 'page' } : {})}
-            >
-              {t.overview.timeline}
-            </a>
-            <a
-              class="button"
-              href={href({ name: 'list' })}
-              {...(props.view === 'list' ? { 'aria-current': 'page' } : {})}
-            >
-              {t.overview.list}
-            </a>
-          </div>
           <Summary totals={props.totals} />
         </div>
       )}

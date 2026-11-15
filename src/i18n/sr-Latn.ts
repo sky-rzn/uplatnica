@@ -149,9 +149,6 @@ export const srLatn = {
 
   overview: {
     title: 'Pregled',
-    view: 'Prikaz',
-    timeline: 'Dijagram',
-    list: 'Lista',
     nothing: 'Trenutno nema ništa za plaćanje.',
     dueNow: 'Za plaćanje sada: ',
     overdue: 'Kasni: ',
@@ -177,15 +174,6 @@ export const srLatn = {
     rowTotal: 'Ukupno sa rokom u prikazanom periodu',
     noMatch: 'Nijedan račun ne odgovara filteru.',
     legend: 'Legenda',
-  },
-
-  list: {
-    groups: { overdue: 'Kasni', now: 'Za plaćanje', soon: 'Uskoro' },
-    pick: (title: string) => `Izaberi za štampu: ${title}`,
-    nothingAhead: (n: number) =>
-      `Nema neplaćenih računa sa rokom u narednih ${String(n)} dana.`,
-    pickAll: 'Izaberi sve',
-    print: 'Štampaj uplatnice',
   },
 
   bills: {

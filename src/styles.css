@@ -714,60 +714,6 @@ button.tl-block:focus-visible {
   outline: none;
 }
 
-.agenda-group.st-overdue h2,
-.agenda-group.st-due h2 {
-  color: var(--st-text);
-}
-
-.agenda-group h2 .muted {
-  font-weight: normal;
-  font-size: 0.9rem;
-}
-
-.agenda-item {
-  border-left: 4px solid var(--st);
-  padding: 0;
-}
-
-.agenda-item .pick {
-  margin-left: 0.75rem;
-  flex: none;
-}
-
-.agenda-item button {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  width: 100%;
-  padding: 0.75rem;
-  border: 0;
-  background: none;
-  text-align: left;
-}
-
-.agenda-item .card-main > * {
-  display: block;
-}
-
-.agenda-item .amount {
-  text-align: right;
-}
-
-.agenda-item .amount small {
-  display: block;
-  color: var(--st-text);
-  font-weight: 600;
-}
-
-.print-bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1rem;
-  align-items: center;
-  justify-content: space-between;
-  margin: 0.5rem 0;
-}
-
 .qr-box {
   display: grid;
   gap: 0.5rem;

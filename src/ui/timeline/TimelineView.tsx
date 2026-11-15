@@ -182,7 +182,6 @@ export function TimelineView() {
   return (
     <section class="timeline">
       <OverviewHeader
-        view="timeline"
         ready={ready}
         totals={
           ready && activeBills.length > 0

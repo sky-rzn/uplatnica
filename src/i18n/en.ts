@@ -158,9 +158,6 @@ export const en: Messages = {
 
   overview: {
     title: 'Overview',
-    view: 'View',
-    timeline: 'Timeline',
-    list: 'List',
     nothing: 'Nothing to pay right now.',
     dueNow: 'Due now: ',
     overdue: 'Overdue: ',
@@ -186,15 +183,6 @@ export const en: Messages = {
     rowTotal: 'Total due within the shown period',
     noMatch: 'No bill matches the filter.',
     legend: 'Legend',
-  },
-
-  list: {
-    groups: { overdue: 'Overdue', now: 'Due', soon: 'Soon' },
-    pick: (title: string) => `Select for printing: ${title}`,
-    nothingAhead: (n: number) =>
-      `No unpaid bills due in the next ${String(n)} days.`,
-    pickAll: 'Select all',
-    print: 'Print slips',
   },
 
   bills: {

@@ -150,9 +150,6 @@ export const srCyrl: Messages = {
 
   overview: {
     title: 'Преглед',
-    view: 'Приказ',
-    timeline: 'Дијаграм',
-    list: 'Листа',
     nothing: 'Тренутно нема ништа за плаћање.',
     dueNow: 'За плаћање сада: ',
     overdue: 'Касни: ',
@@ -178,15 +175,6 @@ export const srCyrl: Messages = {
     rowTotal: 'Укупно са роком у приказаном периоду',
     noMatch: 'Ниједан рачун не одговара филтеру.',
     legend: 'Легенда',
-  },
-
-  list: {
-    groups: { overdue: 'Касни', now: 'За плаћање', soon: 'Ускоро' },
-    pick: (title: string) => `Изабери за штампу: ${title}`,
-    nothingAhead: (n: number) =>
-      `Нема неплаћених рачуна са роком у наредних ${String(n)} дана.`,
-    pickAll: 'Изабери све',
-    print: 'Штампај уплатнице',
   },
 
   bills: {

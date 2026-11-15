@@ -150,9 +150,6 @@ export const ru: Messages = {
 
   overview: {
     title: 'Обзор',
-    view: 'Вид',
-    timeline: 'Диаграмма',
-    list: 'Список',
     nothing: 'Сейчас платить нечего.',
     dueNow: 'К оплате сейчас: ',
     overdue: 'Просрочено: ',
@@ -178,15 +175,6 @@ export const ru: Messages = {
     rowTotal: 'Итого со сроком в показанном периоде',
     noMatch: 'Ни один счёт не подходит под фильтр.',
     legend: 'Легенда',
-  },
-
-  list: {
-    groups: { overdue: 'Просрочено', now: 'К оплате', soon: 'Скоро' },
-    pick: (title: string) => `Выбрать для печати: ${title}`,
-    nothingAhead: (n: number) =>
-      `Нет неоплаченных счетов со сроком в ближайшие ${String(n)} дней.`,
-    pickAll: 'Выбрать все',
-    print: 'Печать уплатниц',
   },
 
   bills: {

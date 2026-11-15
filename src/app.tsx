@@ -6,7 +6,6 @@ import { BACKUP_REMIND_DAYS, backupAge, useLastBackup } from './ui/backup-mark';
 import { DataView } from './ui/backup/DataView';
 import { BillEditor } from './ui/bill-editor/BillEditor';
 import { BillsView } from './ui/bills/BillsView';
-import { ListView } from './ui/list/ListView';
 import { RepoContext, useLive } from './ui/data';
 import { usePreferencesVersion } from './ui/preferences';
 import { ProfilesView } from './ui/profiles/ProfilesView';
@@ -31,8 +30,6 @@ function Page({ route }: { route: Route }) {
   switch (route.name) {
     case 'timeline':
       return <TimelineView />;
-    case 'list':
-      return <ListView />;
     case 'bills':
       return <BillsView />;
     case 'bill':
@@ -76,7 +73,6 @@ function BackupReminder() {
 function pageTitle(route: Route): string {
   switch (route.name) {
     case 'timeline':
-    case 'list':
       return t.overview.title;
     case 'bill':
       return route.id === null ? t.common.newBill : t.app.nav.bills;
@@ -100,9 +96,7 @@ function Shell() {
       ? 'bills'
       : route.name === 'sync'
         ? 'data'
-        : route.name === 'list' ||
-            route.name === 'print' ||
-            route.name === 'scan'
+        : route.name === 'print' || route.name === 'scan'
           ? 'timeline'
           : route.name;
 
