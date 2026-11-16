@@ -76,7 +76,6 @@ const bill = z.strictObject({
   amount: z.optional(para),
   currency: z.literal('RSD'),
   schedule,
-  graceDays: z.optional(z.int().check(z.gte(0))),
   notes: z.optional(text),
   order: z.optional(z.int()),
   archived: z.boolean(),

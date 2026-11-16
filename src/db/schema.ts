@@ -75,5 +75,15 @@ export class UplatnicaDb extends Dexie {
       peers: 'id',
       meta: 'key',
     });
+    this.version(4)
+      .stores({})
+      .upgrade((tx) =>
+        tx
+          .table('bills')
+          .toCollection()
+          .modify((bill: Record<string, unknown>) => {
+            delete bill.graceDays;
+          }),
+      );
   }
 }

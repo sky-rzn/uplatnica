@@ -59,7 +59,7 @@ describe('BillEditor', () => {
     fireEvent.change(screen.getByLabelText('Mesec'), {
       target: { value: '1' },
     });
-    fireEvent.change(screen.getByLabelText('Plaćanje moguće od'), {
+    fireEvent.change(screen.getByLabelText('Plaćanje od'), {
       target: { value: 'day' },
     });
     type('Dan početka plaćanja', '1');

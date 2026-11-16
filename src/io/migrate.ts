@@ -1,5 +1,5 @@
 export const BACKUP_APP = 'uplatnica';
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;
 
 export type RawBackup = Record<string, unknown>;
 
@@ -8,10 +8,21 @@ export type Migrations = Readonly<
   Record<number, (data: RawBackup) => RawBackup>
 >;
 
+function dropGraceDays(bill: unknown): unknown {
+  if (typeof bill !== 'object' || bill === null) return bill;
+  const rest = { ...bill } as Record<string, unknown>;
+  delete rest.graceDays;
+  return rest;
+}
+
 export const MIGRATIONS: Migrations = {
   1: (data) => ({ ...data, tombstones: [] }),
   2: (data) => data,
   3: (data) => data,
+  4: (data) =>
+    Array.isArray(data.bills)
+      ? { ...data, bills: data.bills.map(dropGraceDays) }
+      : data,
 };
 
 export type MigrateResult =

@@ -91,7 +91,6 @@ interface Bill {             // шаблон обязательства
   amount?: number;           // хранить в парах (целое число), не float
   currency: 'RSD';
   schedule: Schedule;
-  graceDays?: number;        // через сколько дней после срока считать просрочкой
   notes?: string;
   archived: boolean;
 }
@@ -120,7 +119,7 @@ interface Occurrence {       // хранится только если у пер
 | Условие | Статус | Цвет |
 |---|---|---|
 | `paidAt` задан | paid | зелёный |
-| не оплачен, `today > dueDate + graceDays` | overdue | красный |
+| не оплачен, `today > dueDate` | overdue | красный |
 | не оплачен, срок в пределах горизонта (N дней) или текущий период | due | оранжевый |
 | `variable` и сумма ещё не введена | awaiting amount | оранжевый со штриховкой |
 | срок в будущем | upcoming | серый или контурный |

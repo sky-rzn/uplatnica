@@ -24,7 +24,20 @@ describe('migrate', () => {
   it('gives version 1 backups an empty list of deletions', () => {
     expect(migrate({ app: 'uplatnica', schemaVersion: 1 })).toEqual({
       ok: true,
-      data: { app: 'uplatnica', schemaVersion: 4, tombstones: [] },
+      data: { app: 'uplatnica', schemaVersion: 5, tombstones: [] },
+    });
+  });
+
+  it('drops the grace days of version 4 bills', () => {
+    expect(
+      migrate({
+        app: 'uplatnica',
+        schemaVersion: 4,
+        bills: [{ id: 'b1', graceDays: 2 }],
+      }),
+    ).toEqual({
+      ok: true,
+      data: { app: 'uplatnica', schemaVersion: 5, bills: [{ id: 'b1' }] },
     });
   });
 

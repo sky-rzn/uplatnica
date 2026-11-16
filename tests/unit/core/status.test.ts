@@ -4,15 +4,12 @@ import { resolveOccurrences } from '../../../src/core/schedule';
 import { computeStatus } from '../../../src/core/status';
 import { bill } from './fixtures';
 
-const paušal = bill(
-  {
-    kind: 'periodic',
-    everyMonths: 1,
-    due: { day: 15, monthOffset: 1 },
-    start: '2026-01',
-  },
-  { graceDays: 2 },
-);
+const paušal = bill({
+  kind: 'periodic',
+  everyMonths: 1,
+  due: { day: 15, monthOffset: 1 },
+  start: '2026-01',
+});
 
 function statusOf(
   today: string,
@@ -36,11 +33,11 @@ describe('computeStatus', () => {
 
   it('is due within the horizon after the period', () => {
     expect(statusOf('2026-11-01')).toBe('due');
-    expect(statusOf('2026-11-17')).toBe('due');
+    expect(statusOf('2026-11-15')).toBe('due');
   });
 
-  it('is overdue after the grace days', () => {
-    expect(statusOf('2026-11-18')).toBe('overdue');
+  it('is overdue after the due date', () => {
+    expect(statusOf('2026-11-16')).toBe('overdue');
   });
 
   it('is upcoming far ahead', () => {

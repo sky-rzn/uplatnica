@@ -1,4 +1,5 @@
 import 'fake-indexeddb/auto';
+import Dexie from 'dexie';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Profile, Section } from '../../../src/core/model';
 import {
@@ -360,5 +361,31 @@ describe('Repo sync', () => {
     );
     await a.replaceAll(dataset());
     expect((await a.device('A')).id).not.toBe(before.id);
+  });
+});
+
+describe('UplatnicaDb', () => {
+  it('drops the grace days of stored bills on upgrade', async () => {
+    const name = `test-${newId()}`;
+    const old = new Dexie(name);
+    old.version(3).stores({
+      profiles: 'id',
+      sections: 'id, order',
+      bills: 'id, sectionId, profileId',
+      occurrences: '[billId+periodKey], billId',
+      tombstones: '[table+key]',
+      changes: '[table+key], at',
+      peers: 'id',
+      meta: 'key',
+    });
+    await old.table('bills').put({ ...monthly, graceDays: 2, updatedAt: T0 });
+    old.close();
+
+    const upgraded = new UplatnicaDb(name);
+    expect(await upgraded.bills.get(monthly.id)).toEqual({
+      ...monthly,
+      updatedAt: T0,
+    });
+    await upgraded.delete();
   });
 });

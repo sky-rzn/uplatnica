@@ -232,7 +232,8 @@ export const en: Messages = {
     start: 'First period',
     end: 'Last period',
     monthPlaceholder: 'YYYY-MM',
-    payFrom: 'Payment opens',
+    payFrom: 'Pay from',
+    payBy: 'Pay by',
     payFromRule: {
       day: 'Day payment opens',
       month: 'Month payment opens',
@@ -240,7 +241,7 @@ export const en: Messages = {
     },
     payFromNone: 'not set',
     payFromHint:
-      'Optional. From this date the bill is due, after the due date it is overdue. Without it the bill is due during its period and 14 days before the due date.',
+      'Optional. Before this date the bill is grey, from it orange, after the pay-by date red. Without it the bill is orange during its period and 14 days before the pay-by date.',
     dueKind: {
       day: 'a given day of the month',
       last: 'the last day of the month',
@@ -262,9 +263,6 @@ export const en: Messages = {
     removeDate: (n: number) => `Remove date ${String(n)}`,
     remove: 'Remove',
     addDate: 'Add a date',
-    graceDays: 'Grace days after the due date',
-    graceDaysHint:
-      'Optional. For this many days after the due date the bill is not yet overdue.',
     nextDues: 'Next due dates: ',
     lastDue: 'Last due date: ',
     other: 'Other',
@@ -520,7 +518,7 @@ export const en: Messages = {
     month: 'A month as YYYY-MM.',
     date: 'Invalid date.',
     endBeforeStart: 'The end is before the start.',
-    payFromAfterDue: 'Payment opens after the due date.',
+    payFromAfterDue: 'Pay from is after pay by.',
     noDates: 'Add at least one date.',
     templateSyntax: 'The template is not valid: check the curly braces.',
     templateTooLong: (width: number) =>

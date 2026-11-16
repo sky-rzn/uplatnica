@@ -58,7 +58,6 @@ export interface Bill {
   amount?: Para;
   currency: 'RSD';
   schedule: Schedule;
-  graceDays?: number;
   notes?: string;
   /** Position within the section; bills without one go last. */
   order?: number;

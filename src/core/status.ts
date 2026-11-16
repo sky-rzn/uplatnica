@@ -45,7 +45,7 @@ export function computeStatus(
       stored.paidAmount < amount;
     if (!short) return 'paid';
   }
-  if (today > addDays(occ.dueDate, bill.graceDays ?? 0)) return 'overdue';
+  if (today > occ.dueDate) return 'overdue';
   if (stored?.paidAt !== undefined) return 'partial';
 
   if (occ.payFrom !== undefined) {

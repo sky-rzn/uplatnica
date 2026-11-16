@@ -62,7 +62,6 @@ export interface BillDraft {
   end: string;
   shiftToWorkday: boolean;
   dates: string[];
-  graceDays: string;
   notes: string;
   archived: boolean;
 }
@@ -130,7 +129,6 @@ export function emptyBillDraft(
     end: '',
     shiftToWorkday: false,
     dates: [],
-    graceDays: '',
     notes: '',
     archived: false,
   };
@@ -152,7 +150,6 @@ export function billToDraft(
   d.referenceVars = { ...bill.referenceVars };
   d.amountMode = bill.amountMode;
   d.amount = bill.amount === undefined ? '' : formatAmount(bill.amount);
-  d.graceDays = bill.graceDays === undefined ? '' : String(bill.graceDays);
   d.notes = bill.notes ?? '';
   d.archived = bill.archived;
 
@@ -381,11 +378,6 @@ export function validateBill(d: BillDraft, ctx: BillContext): BillFormResult {
     else amount = parsed;
   }
 
-  const graceDays =
-    d.graceDays.trim() === ''
-      ? undefined
-      : readInteger('graceDays', d.graceDays, 0, 365, errors);
-
   const schedule = readSchedule(d, errors);
   if (schedule)
     preview.next = upcomingPeriods(schedule, ctx.today, PREVIEW_COUNT);
@@ -448,7 +440,6 @@ export function validateBill(d: BillDraft, ctx: BillContext): BillFormResult {
   if (template !== '') bill.referenceTemplate = template;
   if (Object.keys(referenceVars).length > 0) bill.referenceVars = referenceVars;
   if (amount !== undefined) bill.amount = amount;
-  if (graceDays !== undefined) bill.graceDays = graceDays;
   const notes = d.notes.trim();
   if (notes !== '') bill.notes = notes;
   return { value: bill, errors, warnings, preview };

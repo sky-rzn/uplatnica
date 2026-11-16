@@ -350,7 +350,6 @@ describe('billToDraft', () => {
       reference: '{NAPLATNI:11}{YY}{MM}',
       referenceVars: { NAPLATNI: '2004937106' },
       payeeAddress: 'Beograd',
-      graceDays: '5',
       notes: 'Napomena',
       archived: true,
     },

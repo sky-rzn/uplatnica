@@ -222,7 +222,8 @@ export const srLatn = {
     start: 'Prvi period',
     end: 'Poslednji period',
     monthPlaceholder: 'GGGG-MM',
-    payFrom: 'Plaćanje moguće od',
+    payFrom: 'Plaćanje od',
+    payBy: 'Platiti do',
     payFromRule: {
       day: 'Dan početka plaćanja',
       month: 'Mesec početka plaćanja',
@@ -230,7 +231,7 @@ export const srLatn = {
     },
     payFromNone: 'nije zadato',
     payFromHint:
-      'Nije obavezno. Od ovog datuma račun čeka plaćanje, posle roka kasni. Bez njega račun čeka plaćanje u svom periodu i 14 dana pre roka.',
+      'Nije obavezno. Pre ovog datuma račun je siv, od njega narandžast, posle „Platiti do” crven. Bez njega račun je narandžast ceo svoj period i 14 dana pre „Platiti do”.',
     dueKind: {
       day: 'određeni dan u mesecu',
       last: 'poslednji dan u mesecu',
@@ -252,9 +253,6 @@ export const srLatn = {
     removeDate: (n: number) => `Ukloni datum ${String(n)}`,
     remove: 'Ukloni',
     addDate: 'Dodaj datum',
-    graceDays: 'Dana tolerancije posle roka',
-    graceDaysHint:
-      'Neobavezno. Toliko dana posle roka račun se još ne smatra docnjom.',
     nextDues: 'Sledeći rokovi: ',
     lastDue: 'Poslednji rok: ',
     other: 'Ostalo',
@@ -508,7 +506,7 @@ export const srLatn = {
     month: 'Mesec u obliku GGGG-MM.',
     date: 'Neispravan datum.',
     endBeforeStart: 'Kraj je pre početka.',
-    payFromAfterDue: 'Plaćanje počinje posle roka.',
+    payFromAfterDue: '„Plaćanje od” je posle „Platiti do”.',
     noDates: 'Dodajte bar jedan datum.',
     templateSyntax: 'Šablon nije ispravan: proverite vitičaste zagrade.',
     templateTooLong: (width: number) =>

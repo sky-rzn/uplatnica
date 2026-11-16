@@ -456,27 +456,6 @@ function Editor(props: {
               })}
             </div>
             <SelectField
-              id="bill-due-kind"
-              name="dueKind"
-              label={t.common.dueDate}
-              feedback={fb}
-              value={draft.dueKind}
-              options={DUE_KINDS.map((k) => ({
-                value: k,
-                label: e.dueKind[k],
-              }))}
-              onChange={(dueKind) => {
-                set({ dueKind });
-              }}
-            />
-            {ruleFields({
-              kind: draft.dueKind,
-              day: 'dueDay',
-              monthOffset: 'monthOffset',
-              daysFromStart: 'daysFromStart',
-              labels: e,
-            })}
-            <SelectField
               id="bill-pay-from-kind"
               name="payFromKind"
               label={e.payFrom}
@@ -497,6 +476,27 @@ function Editor(props: {
               monthOffset: 'payFromMonthOffset',
               daysFromStart: 'payFromDaysFromStart',
               labels: e.payFromRule,
+            })}
+            <SelectField
+              id="bill-due-kind"
+              name="dueKind"
+              label={e.payBy}
+              feedback={fb}
+              value={draft.dueKind}
+              options={DUE_KINDS.map((k) => ({
+                value: k,
+                label: e.dueKind[k],
+              }))}
+              onChange={(dueKind) => {
+                set({ dueKind });
+              }}
+            />
+            {ruleFields({
+              kind: draft.dueKind,
+              day: 'dueDay',
+              monthOffset: 'monthOffset',
+              daysFromStart: 'daysFromStart',
+              labels: e,
             })}
             <CheckField
               label={e.shiftToWorkday}
@@ -555,10 +555,6 @@ function Editor(props: {
             )}
           </div>
         )}
-        {text('graceDays', e.graceDays, {
-          input: { inputMode: 'numeric' },
-          hint: e.graceDaysHint,
-        })}
         {preview.next.length > 0 && (
           <p class="preview" aria-live="polite">
             {preview.next.some((p) => p.dueDate >= today)
