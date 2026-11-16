@@ -59,6 +59,13 @@ describe('BillEditor', () => {
     fireEvent.change(screen.getByLabelText('Mesec'), {
       target: { value: '1' },
     });
+    fireEvent.change(screen.getByLabelText('Plaćanje moguće od'), {
+      target: { value: 'day' },
+    });
+    type('Dan početka plaćanja', '1');
+    fireEvent.change(screen.getByLabelText('Mesec početka plaćanja'), {
+      target: { value: '1' },
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Sačuvaj' }));
 
     await screen.findByRole('link', { name: /EPS/ });
@@ -70,7 +77,11 @@ describe('BillEditor', () => {
       referenceTemplate: '{NAPLATNI:11}{YY}{MM}',
       referenceVars: { NAPLATNI: '2004937106' },
       amountMode: 'variable',
-      schedule: { kind: 'periodic', due: { day: 28, monthOffset: 1 } },
+      schedule: {
+        kind: 'periodic',
+        due: { day: 28, monthOffset: 1 },
+        payFrom: { day: 1, monthOffset: 1 },
+      },
     });
     expect(saved?.amount).toBeUndefined();
   });

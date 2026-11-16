@@ -23,6 +23,7 @@ export interface Period {
   /** Due date before the shift to a working day. */
   nominalDue: IsoDate;
   dueDate: IsoDate;
+  payFrom?: IsoDate;
 }
 
 export interface VirtualOccurrence extends Period {
@@ -106,13 +107,16 @@ function periodicBounds(
 
 function periodicPeriod(schedule: Periodic, startIndex: number): Period {
   const nominalDue = dueDateFor(schedule.due, startIndex);
-  return {
+  const period: Period = {
     periodKey: periodKey(schedule.everyMonths, startIndex),
     start: firstOfMonthIndex(startIndex),
     end: firstOfMonthIndex(startIndex + schedule.everyMonths),
     nominalDue,
     dueDate: schedule.shiftToWorkday ? nextWorkday(nominalDue) : nominalDue,
   };
+  if (schedule.payFrom)
+    period.payFrom = dueDateFor(schedule.payFrom, startIndex);
+  return period;
 }
 
 function datePeriods(dates: readonly IsoDate[]): Period[] {

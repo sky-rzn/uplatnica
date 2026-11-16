@@ -48,7 +48,12 @@ export function computeStatus(
   if (today > addDays(occ.dueDate, bill.graceDays ?? 0)) return 'overdue';
   if (stored?.paidAt !== undefined) return 'partial';
 
-  const current = occ.start <= today && today < occ.end;
-  if (!current && occ.dueDate > addDays(today, horizonDays)) return 'upcoming';
+  if (occ.payFrom !== undefined) {
+    if (today < occ.payFrom) return 'upcoming';
+  } else {
+    const current = occ.start <= today && today < occ.end;
+    if (!current && occ.dueDate > addDays(today, horizonDays))
+      return 'upcoming';
+  }
   return amount === undefined ? 'awaiting-amount' : 'due';
 }

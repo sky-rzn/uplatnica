@@ -78,6 +78,25 @@ describe('computeStatus', () => {
     expect(statusOf('2026-12-01', {}, variable)).toBe('overdue');
   });
 
+  it('turns due on the opening of payment, not in the period', () => {
+    const b = bill(
+      {
+        kind: 'periodic',
+        everyMonths: 1,
+        due: { day: 20, monthOffset: 1 },
+        payFrom: { day: 1, monthOffset: 1 },
+        start: '2026-01',
+      },
+      { amountMode: 'variable' },
+    );
+    expect(statusOf('2026-10-15', {}, b)).toBe('upcoming');
+    expect(statusOf('2026-10-31', {}, b)).toBe('upcoming');
+    expect(statusOf('2026-11-01', {}, b)).toBe('awaiting-amount');
+    expect(statusOf('2026-11-01', { amount: 100 }, b)).toBe('due');
+    expect(statusOf('2026-11-20', { amount: 100 }, b)).toBe('due');
+    expect(statusOf('2026-11-21', { amount: 100 }, b)).toBe('overdue');
+  });
+
   it('follows an overridden due date', () => {
     expect(statusOf('2026-11-25', { dueDate: '2026-11-30' })).toBe('due');
   });

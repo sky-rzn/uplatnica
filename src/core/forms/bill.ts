@@ -1,4 +1,4 @@
-import { isIsoDate, parseYearMonth, type IsoDate } from '../date';
+import { isIsoDate, monthIndex, parseYearMonth, type IsoDate } from '../date';
 import type {
   Bill,
   DueRule,
@@ -9,7 +9,7 @@ import type {
   Section,
 } from '../model';
 import { parseAmount, type Para } from '../money';
-import { upcomingPeriods, type Period } from '../schedule';
+import { dueDateFor, upcomingPeriods, type Period } from '../schedule';
 import type { BillPreset } from '../serbia/presets';
 import { formatAccountShort, normalizeAccount } from '../serbia/account';
 import { QR_TEXT_LIMITS, checkQrText } from '../serbia/ipsQr';
@@ -32,6 +32,7 @@ import {
 export const EVERY_MONTHS: readonly EveryMonths[] = [1, 2, 3, 4, 6, 12];
 
 export type DueKind = 'day' | 'last' | 'daysFromStart';
+export type PayFromKind = 'none' | DueKind;
 
 export interface BillDraft {
   title: string;
@@ -53,6 +54,10 @@ export interface BillDraft {
   dueDay: string;
   monthOffset: string;
   daysFromStart: string;
+  payFromKind: PayFromKind;
+  payFromDay: string;
+  payFromMonthOffset: string;
+  payFromDaysFromStart: string;
   start: string;
   end: string;
   shiftToWorkday: boolean;
@@ -117,6 +122,10 @@ export function emptyBillDraft(
     dueDay: '15',
     monthOffset: '0',
     daysFromStart: '0',
+    payFromKind: 'none',
+    payFromDay: '1',
+    payFromMonthOffset: '0',
+    payFromDaysFromStart: '0',
     start: today.slice(0, 7),
     end: '',
     shiftToWorkday: false,
@@ -158,15 +167,30 @@ export function billToDraft(
   d.start = s.start;
   d.end = s.end ?? '';
   d.shiftToWorkday = s.shiftToWorkday ?? false;
-  if ('daysFromStart' in s.due) {
-    d.dueKind = 'daysFromStart';
-    d.daysFromStart = String(s.due.daysFromStart);
-  } else {
-    d.dueKind = s.due.day === 'last' ? 'last' : 'day';
-    if (s.due.day !== 'last') d.dueDay = String(s.due.day);
-    d.monthOffset = String(s.due.monthOffset ?? 0);
+  Object.assign(d, dueRuleFields(s.due));
+  if (s.payFrom) {
+    const f = dueRuleFields(s.payFrom);
+    d.payFromKind = f.dueKind;
+    if (f.dueDay !== undefined) d.payFromDay = f.dueDay;
+    if (f.monthOffset !== undefined) d.payFromMonthOffset = f.monthOffset;
+    if (f.daysFromStart !== undefined) d.payFromDaysFromStart = f.daysFromStart;
   }
   return d;
+}
+
+function dueRuleFields(
+  rule: DueRule,
+): Pick<BillDraft, 'dueKind'> &
+  Partial<Pick<BillDraft, 'dueDay' | 'monthOffset' | 'daysFromStart'>> {
+  if ('daysFromStart' in rule)
+    return {
+      dueKind: 'daysFromStart',
+      daysFromStart: String(rule.daysFromStart),
+    };
+  const offset = String(rule.monthOffset ?? 0);
+  return rule.day === 'last'
+    ? { dueKind: 'last', monthOffset: offset }
+    : { dueKind: 'day', dueDay: String(rule.day), monthOffset: offset };
 }
 
 function readInteger(
@@ -182,16 +206,18 @@ function readInteger(
   return undefined;
 }
 
-function readDueRule(d: BillDraft, errors: Issues): DueRule | undefined {
-  if (d.dueKind === 'daysFromStart') {
-    const days = readInteger('daysFromStart', d.daysFromStart, 0, 366, errors);
+function readDueRule(
+  kind: DueKind,
+  fields: Record<'dueDay' | 'monthOffset' | 'daysFromStart', [string, string]>,
+  errors: Issues,
+): DueRule | undefined {
+  if (kind === 'daysFromStart') {
+    const days = readInteger(...fields.daysFromStart, 0, 366, errors);
     return days === undefined ? undefined : { daysFromStart: days };
   }
-  const offset = readInteger('monthOffset', d.monthOffset, 0, 12, errors);
+  const offset = readInteger(...fields.monthOffset, 0, 12, errors);
   const day =
-    d.dueKind === 'last'
-      ? 'last'
-      : readInteger('dueDay', d.dueDay, 1, 31, errors);
+    kind === 'last' ? 'last' : readInteger(...fields.dueDay, 1, 31, errors);
   if (offset === undefined || day === undefined) return undefined;
   return offset === 0 ? { day } : { day, monthOffset: offset };
 }
@@ -217,7 +243,27 @@ function readSchedule(d: BillDraft, errors: Issues): Schedule | undefined {
     return { kind: 'dates', dates: [...new Set(dates)].sort() };
   }
 
-  const due = readDueRule(d, errors);
+  const due = readDueRule(
+    d.dueKind,
+    {
+      dueDay: ['dueDay', d.dueDay],
+      monthOffset: ['monthOffset', d.monthOffset],
+      daysFromStart: ['daysFromStart', d.daysFromStart],
+    },
+    errors,
+  );
+  const payFrom =
+    d.payFromKind === 'none'
+      ? undefined
+      : readDueRule(
+          d.payFromKind,
+          {
+            dueDay: ['payFromDay', d.payFromDay],
+            monthOffset: ['payFromMonthOffset', d.payFromMonthOffset],
+            daysFromStart: ['payFromDaysFromStart', d.payFromDaysFromStart],
+          },
+          errors,
+        );
   const start = d.start.trim();
   const end = d.end.trim();
   if (start === '') errors.start = { code: 'required' };
@@ -226,6 +272,15 @@ function readSchedule(d: BillDraft, errors: Issues): Schedule | undefined {
   else if (end !== '' && parseYearMonth(start) && end < start)
     errors.end = { code: 'end-before-start' };
   if (!due || errors.start || errors.end) return undefined;
+  if (d.payFromKind !== 'none' && !payFrom) return undefined;
+  if (payFrom) {
+    const ym = parseYearMonth(start);
+    const idx = ym ? monthIndex(ym.year, ym.month) : 0;
+    if (dueDateFor(payFrom, idx) > dueDateFor(due, idx)) {
+      errors.payFromKind = { code: 'pay-from-after-due' };
+      return undefined;
+    }
+  }
 
   const schedule: Schedule = {
     kind: 'periodic',
@@ -233,6 +288,7 @@ function readSchedule(d: BillDraft, errors: Issues): Schedule | undefined {
     due,
     start,
   };
+  if (payFrom) schedule.payFrom = payFrom;
   if (end !== '') schedule.end = end;
   if (d.shiftToWorkday) schedule.shiftToWorkday = true;
   return schedule;

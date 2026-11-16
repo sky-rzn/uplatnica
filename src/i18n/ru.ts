@@ -79,6 +79,7 @@ export const ru: Messages = {
     dates: (n: number) =>
       `${String(n)} ${p(n, { one: 'дата', few: 'даты', many: 'дат', other: 'даты' })}`,
     periodic: (every: string, due: string) => `${every}, срок — ${due}`,
+    payFrom: (from: string) => `начало оплаты — ${from}`,
   },
 
   common: {
@@ -222,6 +223,15 @@ export const ru: Messages = {
     start: 'Первый период',
     end: 'Последний период',
     monthPlaceholder: 'ГГГГ-ММ',
+    payFrom: 'Оплата возможна с',
+    payFromRule: {
+      day: 'День начала оплаты',
+      month: 'Месяц начала оплаты',
+      daysFromStart: 'Дней от первого дня периода до начала оплаты',
+    },
+    payFromNone: 'не задано',
+    payFromHint:
+      'Необязательно. С этой даты счёт ждёт оплаты, после срока — просрочен. Без неё счёт ждёт оплаты в своём периоде и за 14 дней до срока.',
     dueKind: {
       day: 'определённое число месяца',
       last: 'последнее число месяца',
@@ -503,6 +513,7 @@ export const ru: Messages = {
     month: 'Месяц в виде ГГГГ-ММ.',
     date: 'Неправильная дата.',
     endBeforeStart: 'Конец раньше начала.',
+    payFromAfterDue: 'Оплата открывается позже срока.',
     noDates: 'Добавьте хотя бы одну дату.',
     templateSyntax: 'Шаблон неправильный: проверьте фигурные скобки.',
     templateTooLong: (width: number) =>

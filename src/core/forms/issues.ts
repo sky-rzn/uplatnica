@@ -20,6 +20,7 @@ export type Issue =
   | { code: 'month' }
   | { code: 'date' }
   | { code: 'end-before-start' }
+  | { code: 'pay-from-after-due' }
   | { code: 'no-dates' }
   | { code: 'reference'; reason: ReferenceError }
   | { code: 'template-syntax' }

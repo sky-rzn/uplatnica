@@ -46,6 +46,7 @@ const schedule = z.discriminatedUnion('kind', [
     kind: z.literal('periodic'),
     everyMonths: z.literal([1, 2, 3, 4, 6, 12]),
     due: dueRule,
+    payFrom: z.optional(dueRule),
     start: yearMonth,
     end: z.optional(yearMonth),
     shiftToWorkday: z.optional(z.boolean()),

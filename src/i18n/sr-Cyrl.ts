@@ -79,6 +79,7 @@ export const srCyrl: Messages = {
     dates: (n: number) =>
       `${String(n)} ${p(n, { one: 'датум', few: 'датума', other: 'датума' })}`,
     periodic: (every: string, due: string) => `${every}, рок ${due}`,
+    payFrom: (from: string) => `плаћање од ${from}`,
   },
 
   common: {
@@ -222,6 +223,15 @@ export const srCyrl: Messages = {
     start: 'Први период',
     end: 'Последњи период',
     monthPlaceholder: 'ГГГГ-ММ',
+    payFrom: 'Плаћање могуће од',
+    payFromRule: {
+      day: 'Дан почетка плаћања',
+      month: 'Месец почетка плаћања',
+      daysFromStart: 'Дана од првог дана периода до почетка плаћања',
+    },
+    payFromNone: 'није задато',
+    payFromHint:
+      'Није обавезно. Од овог датума рачун чека плаћање, после рока касни. Без њега рачун чека плаћање у свом периоду и 14 дана пре рока.',
     dueKind: {
       day: 'одређени дан у месецу',
       last: 'последњи дан у месецу',
@@ -499,6 +509,7 @@ export const srCyrl: Messages = {
     month: 'Месец у облику ГГГГ-ММ.',
     date: 'Неисправан датум.',
     endBeforeStart: 'Крај је пре почетка.',
+    payFromAfterDue: 'Плаћање почиње после рока.',
     noDates: 'Додајте бар један датум.',
     templateSyntax: 'Шаблон није исправан: проверите витичасте заграде.',
     templateTooLong: (width: number) =>

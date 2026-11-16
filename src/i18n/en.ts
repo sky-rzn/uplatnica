@@ -85,6 +85,7 @@ export const en: Messages = {
     dates: (n: number) =>
       `${String(n)} ${p(n, { one: 'date', other: 'dates' })}`,
     periodic: (every: string, due: string) => `${every}, due ${due}`,
+    payFrom: (from: string) => `payable from ${from}`,
   },
 
   common: {
@@ -231,6 +232,15 @@ export const en: Messages = {
     start: 'First period',
     end: 'Last period',
     monthPlaceholder: 'YYYY-MM',
+    payFrom: 'Payment opens',
+    payFromRule: {
+      day: 'Day payment opens',
+      month: 'Month payment opens',
+      daysFromStart: 'Days from the first day of the period to the opening',
+    },
+    payFromNone: 'not set',
+    payFromHint:
+      'Optional. From this date the bill is due, after the due date it is overdue. Without it the bill is due during its period and 14 days before the due date.',
     dueKind: {
       day: 'a given day of the month',
       last: 'the last day of the month',
@@ -510,6 +520,7 @@ export const en: Messages = {
     month: 'A month as YYYY-MM.',
     date: 'Invalid date.',
     endBeforeStart: 'The end is before the start.',
+    payFromAfterDue: 'Payment opens after the due date.',
     noDates: 'Add at least one date.',
     templateSyntax: 'The template is not valid: check the curly braces.',
     templateTooLong: (width: number) =>

@@ -164,6 +164,26 @@ describe('validateBill', () => {
     });
   });
 
+  it('builds the opening of payment', () => {
+    const payFrom = (extra: Partial<BillDraft>) => {
+      const s = validateBill(draft(extra), ctx).value?.schedule;
+      return s?.kind === 'periodic' ? s.payFrom : 'none';
+    };
+    expect(payFrom({})).toBeUndefined();
+    expect(
+      payFrom({ payFromKind: 'day', payFromDay: '1', payFromMonthOffset: '0' }),
+    ).toEqual({ day: 1 });
+    expect(
+      validateBill(draft({ payFromKind: 'day', payFromDay: '0' }), ctx).errors,
+    ).toEqual({ payFromDay: { code: 'integer', min: 1, max: 31 } });
+    expect(
+      validateBill(
+        draft({ payFromKind: 'day', payFromDay: '16', dueDay: '15' }),
+        ctx,
+      ).errors,
+    ).toEqual({ payFromKind: { code: 'pay-from-after-due' } });
+  });
+
   it('keeps end and the workday shift', () => {
     const r = validateBill(
       draft({
@@ -336,6 +356,20 @@ describe('billToDraft', () => {
     },
     { dueKind: 'last', monthOffset: '1', everyMonths: 12, end: '2030-12' },
     { dueKind: 'daysFromStart', daysFromStart: '44', shiftToWorkday: true },
+    {
+      dueDay: '20',
+      monthOffset: '1',
+      payFromKind: 'day',
+      payFromDay: '1',
+      payFromMonthOffset: '1',
+    },
+    { payFromKind: 'last', payFromMonthOffset: '0', dueKind: 'last' },
+    {
+      dueKind: 'daysFromStart',
+      daysFromStart: '44',
+      payFromKind: 'daysFromStart',
+      payFromDaysFromStart: '10',
+    },
     { amountMode: 'variable', amount: '' },
     { scheduleKind: 'dates', dates: ['2026-12-01', '2027-03-31'], start: '' },
   ])('round-trips %j', (extra) => {

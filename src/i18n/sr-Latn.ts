@@ -78,6 +78,7 @@ export const srLatn = {
     dates: (n: number) =>
       `${String(n)} ${p(n, { one: 'datum', few: 'datuma', other: 'datuma' })}`,
     periodic: (every: string, due: string) => `${every}, rok ${due}`,
+    payFrom: (from: string) => `plaćanje od ${from}`,
   },
 
   common: {
@@ -221,6 +222,15 @@ export const srLatn = {
     start: 'Prvi period',
     end: 'Poslednji period',
     monthPlaceholder: 'GGGG-MM',
+    payFrom: 'Plaćanje moguće od',
+    payFromRule: {
+      day: 'Dan početka plaćanja',
+      month: 'Mesec početka plaćanja',
+      daysFromStart: 'Dana od prvog dana perioda do početka plaćanja',
+    },
+    payFromNone: 'nije zadato',
+    payFromHint:
+      'Nije obavezno. Od ovog datuma račun čeka plaćanje, posle roka kasni. Bez njega račun čeka plaćanje u svom periodu i 14 dana pre roka.',
     dueKind: {
       day: 'određeni dan u mesecu',
       last: 'poslednji dan u mesecu',
@@ -498,6 +508,7 @@ export const srLatn = {
     month: 'Mesec u obliku GGGG-MM.',
     date: 'Neispravan datum.',
     endBeforeStart: 'Kraj je pre početka.',
+    payFromAfterDue: 'Plaćanje počinje posle roka.',
     noDates: 'Dodajte bar jedan datum.',
     templateSyntax: 'Šablon nije ispravan: proverite vitičaste zagrade.',
     templateTooLong: (width: number) =>

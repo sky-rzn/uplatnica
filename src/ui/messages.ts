@@ -47,6 +47,8 @@ export function issueText(issue: Issue): string {
       return m.date;
     case 'end-before-start':
       return m.endBeforeStart;
+    case 'pay-from-after-due':
+      return m.payFromAfterDue;
     case 'no-dates':
       return m.noDates;
     case 'reference':

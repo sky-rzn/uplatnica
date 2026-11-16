@@ -87,6 +87,15 @@ describe('periods', () => {
     expect(jan?.dueDate).toBe('2026-02-18');
   });
 
+  it('dates the opening of payment without a workday shift', () => {
+    const [jan] = periods(
+      monthly({ payFrom: { day: 1, monthOffset: 1 }, shiftToWorkday: true }),
+      '2026-01-01',
+      '2026-02-01',
+    );
+    expect(jan?.payFrom).toBe('2026-02-01');
+  });
+
   it('uses quarter keys and the 45th day for porez na imovinu', () => {
     const schedule: Schedule = {
       kind: 'periodic',

@@ -20,5 +20,8 @@ export function scheduleText(s: Schedule): string {
     return s.dates.length === 1
       ? t.schedule.once
       : t.schedule.dates(s.dates.length);
-  return t.schedule.periodic(everyLabel(s.everyMonths), dueText(s.due));
+  const text = t.schedule.periodic(everyLabel(s.everyMonths), dueText(s.due));
+  return s.payFrom
+    ? `${text}, ${t.schedule.payFrom(dueText(s.payFrom))}`
+    : text;
 }

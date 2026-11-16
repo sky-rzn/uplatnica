@@ -9,6 +9,7 @@ import {
   validateBill,
   type BillDraft,
   type DueKind,
+  type PayFromKind,
 } from '../../core/forms/bill';
 import { applyScanToBill, type ScanNote } from '../../core/forms/scan';
 import type { Bill, Profile, ReferenceModel, Section } from '../../core/model';
@@ -37,6 +38,7 @@ import { everyLabel } from '../schedule-text';
 
 const MODELS: readonly ReferenceModel[] = ['', '97', '11'];
 const DUE_KINDS: readonly DueKind[] = ['day', 'last', 'daysFromStart'];
+const PAY_FROM_KINDS: readonly PayFromKind[] = ['none', ...DUE_KINDS];
 const MONTH_OFFSETS = Array.from({ length: 13 }, (_, i) => i);
 
 type TextKey = {
@@ -150,6 +152,41 @@ function Editor(props: {
       {...extra}
     />
   );
+
+  const ruleFields = (r: {
+    kind: DueKind | 'none';
+    day: 'dueDay' | 'payFromDay';
+    monthOffset: 'monthOffset' | 'payFromMonthOffset';
+    daysFromStart: 'daysFromStart' | 'payFromDaysFromStart';
+    labels: { day: string; month: string; daysFromStart: string };
+  }) => {
+    if (r.kind === 'none') return null;
+    if (r.kind === 'daysFromStart')
+      return text(r.daysFromStart, r.labels.daysFromStart, {
+        input: { inputMode: 'numeric' },
+        hint: e.daysFromStartHint,
+      });
+    return (
+      <div class="row">
+        {r.kind === 'day' &&
+          text(r.day, r.labels.day, { input: { inputMode: 'numeric' } })}
+        <SelectField
+          id={`bill-${r.monthOffset}`}
+          name={r.monthOffset}
+          label={r.labels.month}
+          feedback={fb}
+          value={draft[r.monthOffset]}
+          options={MONTH_OFFSETS.map((i) => ({
+            value: String(i),
+            label: e.monthOffset(i),
+          }))}
+          onChange={(v) => {
+            set({ [r.monthOffset]: v });
+          }}
+        />
+      </div>
+    );
+  };
 
   const account = normalizeAccount(draft.account);
   const basis = paymentBasis(draft.paymentCode.trim());
@@ -432,31 +469,35 @@ function Editor(props: {
                 set({ dueKind });
               }}
             />
-            {draft.dueKind === 'daysFromStart' ? (
-              text('daysFromStart', e.daysFromStart, {
-                input: { inputMode: 'numeric' },
-                hint: e.daysFromStartHint,
-              })
-            ) : (
-              <div class="row">
-                {draft.dueKind === 'day' &&
-                  text('dueDay', e.day, { input: { inputMode: 'numeric' } })}
-                <SelectField
-                  id="bill-month-offset"
-                  name="monthOffset"
-                  label={e.month}
-                  feedback={fb}
-                  value={draft.monthOffset}
-                  options={MONTH_OFFSETS.map((i) => ({
-                    value: String(i),
-                    label: e.monthOffset(i),
-                  }))}
-                  onChange={(monthOffset) => {
-                    set({ monthOffset });
-                  }}
-                />
-              </div>
-            )}
+            {ruleFields({
+              kind: draft.dueKind,
+              day: 'dueDay',
+              monthOffset: 'monthOffset',
+              daysFromStart: 'daysFromStart',
+              labels: e,
+            })}
+            <SelectField
+              id="bill-pay-from-kind"
+              name="payFromKind"
+              label={e.payFrom}
+              feedback={fb}
+              value={draft.payFromKind}
+              options={PAY_FROM_KINDS.map((k) => ({
+                value: k,
+                label: k === 'none' ? e.payFromNone : e.dueKind[k],
+              }))}
+              onChange={(payFromKind) => {
+                set({ payFromKind });
+              }}
+              hint={e.payFromHint}
+            />
+            {ruleFields({
+              kind: draft.payFromKind,
+              day: 'payFromDay',
+              monthOffset: 'payFromMonthOffset',
+              daysFromStart: 'payFromDaysFromStart',
+              labels: e.payFromRule,
+            })}
             <CheckField
               label={e.shiftToWorkday}
               checked={draft.shiftToWorkday}

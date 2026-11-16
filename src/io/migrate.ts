@@ -1,5 +1,5 @@
 export const BACKUP_APP = 'uplatnica';
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 export type RawBackup = Record<string, unknown>;
 
@@ -11,6 +11,7 @@ export type Migrations = Readonly<
 export const MIGRATIONS: Migrations = {
   1: (data) => ({ ...data, tombstones: [] }),
   2: (data) => data,
+  3: (data) => data,
 };
 
 export type MigrateResult =

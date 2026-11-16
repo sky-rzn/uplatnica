@@ -33,6 +33,8 @@ export type Schedule =
       kind: 'periodic';
       everyMonths: EveryMonths;
       due: DueRule;
+      /** When paying the period opens; the bill turns due on this date. */
+      payFrom?: DueRule;
       start: YearMonth;
       end?: YearMonth;
       shiftToWorkday?: boolean;
